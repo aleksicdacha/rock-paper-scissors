@@ -1,0 +1,116 @@
+import { Move, ENDED, PLAYING, RESOLVED } from '@rps/shared';
+import { config } from '../config';
+import { resolveRound } from '../game/gameLogic';
+import { Match } from '../interfaces/Match.interface';
+import { MatchCallbacks } from '../interfaces/MatchCallbacks.interface';
+import { MatchStore } from '../interfaces/MatchStore.interface';
+import { playerIndex } from '../models/createMatch';
+
+export class GameService {
+  private moveTimers = new Map<string, NodeJS.Timeout>();
+
+  constructor(
+    private readonly store: MatchStore,
+    private readonly callbacks: MatchCallbacks,
+  ) {}
+
+  async startRound(matchId: string): Promise<Match> {
+    const match = await this.getOrThrow(matchId);
+    match.state = PLAYING;
+    match.moves = [null, null];
+    match.rematchRequested = [false, false];
+    match.winner = null;
+    match.timeoutAt = Date.now() + config.timer.moveTimeoutMs;
+
+    await this.store.set(matchId, match);
+    this.startMoveTimer(matchId);
+    return match;
+  }
+
+  async submitMove(matchId: string, playerId: string, move: Move): Promise<{ match: Match; resolved: boolean }> {
+    const match = await this.getOrThrow(matchId);
+    if (match.state !== PLAYING) throw new Error('Match is not in playing state');
+
+    const idx = playerIndex(match, playerId);
+    if (match.moves[idx] !== null) throw new Error('Move already submitted');
+
+    match.moves[idx] = move;
+
+    const bothMoved = match.moves[0] !== null && match.moves[1] !== null;
+    if (bothMoved) {
+      this.clearMoveTimer(matchId);
+      resolveCurrentRound(match);
+    }
+
+    await this.store.set(matchId, match);
+    return { match, resolved: bothMoved };
+  }
+
+  async requestRematch(matchId: string, playerId: string): Promise<{ match: Match; ready: boolean }> {
+    const match = await this.getOrThrow(matchId);
+    if (match.state !== RESOLVED) throw new Error('Match is not in resolved state');
+
+    const idx = playerIndex(match, playerId);
+    match.rematchRequested[idx] = true;
+
+    const ready = match.rematchRequested[0] && match.rematchRequested[1];
+    if (ready) {
+      await this.store.set(matchId, match);
+      return { match: await this.startRound(matchId), ready };
+    }
+
+    await this.store.set(matchId, match);
+    return { match, ready };
+  }
+
+  async forfeit(matchId: string, loserId: string): Promise<Match> {
+    const match = await this.getOrThrow(matchId);
+    this.clearMoveTimer(matchId);
+
+    const opponentIdx = playerIndex(match, loserId) === 0 ? 1 : 0;
+    match.state = ENDED;
+    match.winner = match.players[opponentIdx]!.id;
+    match.timeoutAt = null;
+
+    await this.store.set(matchId, match);
+    return match;
+  }
+
+  clearMoveTimer(matchId: string): void {
+    const timer = this.moveTimers.get(matchId);
+    if (!timer) return;
+    clearTimeout(timer);
+    this.moveTimers.delete(matchId);
+  }
+
+  private startMoveTimer(matchId: string): void {
+    this.clearMoveTimer(matchId);
+    const timer = setTimeout(() => this.onMoveTimeout(matchId), config.timer.moveTimeoutMs);
+    this.moveTimers.set(matchId, timer);
+  }
+
+  private async onMoveTimeout(matchId: string): Promise<void> {
+    this.moveTimers.delete(matchId);
+    const match = await this.store.get(matchId);
+    if (!match || match.state !== PLAYING) return;
+
+    resolveCurrentRound(match);
+    await this.store.set(matchId, match);
+    this.callbacks.onRoundResolved(matchId);
+  }
+
+  private async getOrThrow(matchId: string): Promise<Match> {
+    const match = await this.store.get(matchId);
+    if (!match) throw new Error('Match not found');
+    return match;
+  }
+}
+
+function resolveCurrentRound(match: Match): void {
+  const round = resolveRound(match.moves[0], match.moves[1]);
+  match.rounds.push(round);
+  if (round.winner !== null) match.scores[round.winner] += 1;
+  match.state = RESOLVED;
+  match.moves = [null, null];
+  match.timeoutAt = null;
+}
