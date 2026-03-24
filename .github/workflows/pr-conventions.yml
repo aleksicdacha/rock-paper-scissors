@@ -1,0 +1,57 @@
+name: PR Conventions
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-pr-title:
+    name: PR Title Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title matches [RPS-N] format
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            const pattern = /^\[RPS-\d+\]\s.+/;
+            if (!pattern.test(title)) {
+              core.setFailed(
+                `PR title "${title}" does not match the required format.\n` +
+                `Expected: [RPS-<number>] <description>\n` +
+                `Example:  [RPS-1] Implement shared types and events`
+              );
+            }
+
+  check-branch-name:
+    name: Branch Name Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name matches type/description format
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const allowedTypes = [
+              'feature',
+              'bug',
+              'fix',
+              'hotfix',
+              'config',
+              'chore',
+              'refactor',
+              'docs',
+              'test',
+              'ci',
+              'style',
+              'perf',
+            ];
+            const pattern = new RegExp(`^(${allowedTypes.join('|')})/[a-z0-9_]+$`);
+            if (!pattern.test(branch)) {
+              core.setFailed(
+                `Branch name "${branch}" does not match the required format.\n` +
+                `Expected: <type>/<snake_case_description>\n` +
+                `Allowed types: ${allowedTypes.join(', ')}\n` +
+                `Example:  feature/implement_shared_types`
+              );
+            }

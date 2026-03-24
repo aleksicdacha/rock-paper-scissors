@@ -1,0 +1,2 @@
+/** Socket event definitions. */
+export {};

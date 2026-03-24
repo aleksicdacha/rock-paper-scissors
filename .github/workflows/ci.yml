@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Detect which packages changed to skip unnecessary jobs
+  # ---------------------------------------------------------------------------
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      client: ${{ steps.filter.outputs.client }}
+      server: ${{ steps.filter.outputs.server }}
+      shared: ${{ steps.filter.outputs.shared }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            client:
+              - 'packages/client/**'
+              - 'packages/shared/**'
+            server:
+              - 'packages/server/**'
+              - 'packages/shared/**'
+            shared:
+              - 'packages/shared/**'
+
+  # ---------------------------------------------------------------------------
+  # Lint — always runs
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+
+  # ---------------------------------------------------------------------------
+  # Backend Build — skipped when no server/shared changes
+  # ---------------------------------------------------------------------------
+  server-build:
+    name: Server Build
+    needs: changes
+    if: needs.changes.outputs.server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/server
+
+  # ---------------------------------------------------------------------------
+  # Client Build — skipped when no client/shared changes
+  # ---------------------------------------------------------------------------
+  client-build:
+    name: Client Build
+    needs: changes
+    if: needs.changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/client
+
+  # ---------------------------------------------------------------------------
+  # Backend Unit Tests — skipped when no server/shared changes
+  # ---------------------------------------------------------------------------
+  server-tests:
+    name: Server Unit Tests
+    needs: changes
+    if: needs.changes.outputs.server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test --workspace=packages/server
+
+  # ---------------------------------------------------------------------------
+  # Client E2E Tests — skipped when no client/shared changes
+  # ---------------------------------------------------------------------------
+  client-e2e:
+    name: Client E2E Tests
+    needs: [changes, client-build]
+    if: needs.changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/client
+      - run: npm run test:e2e --workspace=packages/client
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: packages/client/playwright-report/
+          retention-days: 7
