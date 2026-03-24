@@ -1,9 +1,7 @@
 import Redis from 'ioredis';
+import { config } from '../config';
 import { Match } from '../interfaces/Match.interface';
 import { MatchStore } from '../interfaces/MatchStore.interface';
-
-const MATCH_PREFIX = 'match:';
-const MATCH_TTL_SECONDS = 3600;
 
 export class RedisMatchStore implements MatchStore {
   constructor(private readonly redis: Redis) {}
@@ -14,7 +12,12 @@ export class RedisMatchStore implements MatchStore {
   }
 
   async set(matchId: string, match: Match): Promise<void> {
-    await this.redis.set(this.key(matchId), JSON.stringify(match), 'EX', MATCH_TTL_SECONDS);
+    await this.redis.set(
+      this.key(matchId),
+      JSON.stringify(match),
+      'EX',
+      config.match.ttlSeconds,
+    );
   }
 
   async delete(matchId: string): Promise<void> {
@@ -22,7 +25,7 @@ export class RedisMatchStore implements MatchStore {
   }
 
   async all(): Promise<Match[]> {
-    const keys = await this.redis.keys(`${MATCH_PREFIX}*`);
+    const keys = await this.redis.keys(`${config.match.prefix}*`);
     if (keys.length === 0) return [];
 
     const values = await this.redis.mget(...keys);
@@ -30,6 +33,6 @@ export class RedisMatchStore implements MatchStore {
   }
 
   private key(matchId: string): string {
-    return `${MATCH_PREFIX}${matchId}`;
+    return `${config.match.prefix}${matchId}`;
   }
 }
