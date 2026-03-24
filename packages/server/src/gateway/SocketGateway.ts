@@ -6,6 +6,7 @@ import { MatchService } from '../services/MatchService';
 import { GameService } from '../services/GameService';
 import { buildGameState, buildMatchResult } from '../game/matchMappers';
 import { config } from '../config';
+import { logger } from '../logger';
 
 export class SocketGateway implements MatchCallbacks {
   private socketsByPlayerId = new Map<string, string>();
@@ -49,6 +50,8 @@ export class SocketGateway implements MatchCallbacks {
     const match = await this.matchService.get(matchId);
     if (!match) return;
 
+    const round = match.rounds[match.rounds.length - 1];
+    logger.info({ matchId, result: round?.winner ?? null }, 'match.resolved');
     this.io.to(matchId).emit(ServerEvent.GameResult, buildMatchResult(match));
     this.io.to(matchId).emit(ServerEvent.GameState, buildGameState(match));
   }
@@ -58,6 +61,7 @@ export class SocketGateway implements MatchCallbacks {
     if (!match || !match.winner) return;
 
     this.io.to(matchId).emit(ServerEvent.MatchForfeit, { winner: match.winner });
+    logger.info({ matchId, winner: match.winner, reason: 'disconnect_timeout' }, 'match.forfeited');
   }
 
   private async handleCreate(socket: Socket, playerId: string, playerName: string): Promise<void> {
@@ -65,6 +69,7 @@ export class SocketGateway implements MatchCallbacks {
       const match = await this.matchService.create({ id: playerId, name: playerName, socketId: socket.id });
       socket.join(match.id);
       socket.emit(ServerEvent.MatchCreated, { matchId: match.id });
+      logger.info({ matchId: match.id, playerName }, 'match.created');
     } catch (err) {
       this.emitError(socket, 'CREATE_FAILED', err);
     }
@@ -89,6 +94,10 @@ export class SocketGateway implements MatchCallbacks {
         players: match.players.map((p) => ({ id: p!.id, name: p!.name })),
       });
       this.io.to(matchId).emit(ServerEvent.GameState, buildGameState(match));
+      logger.info(
+        { matchId, players: match.players.map((p) => p!.name) },
+        'match.started',
+      );
     } catch (err) {
       this.emitError(socket, 'JOIN_FAILED', err);
     }
@@ -97,9 +106,15 @@ export class SocketGateway implements MatchCallbacks {
   private async handleMove(socket: Socket, playerId: string, matchId: string, move: Move): Promise<void> {
     try {
       const { match, resolved } = await this.gameService.submitMove(matchId, playerId, move);
+      logger.info({ matchId, playerId }, 'player.moved');
       this.io.to(matchId).emit(ServerEvent.GameState, buildGameState(match));
       if (resolved) {
         this.io.to(matchId).emit(ServerEvent.GameResult, buildMatchResult(match));
+        const round = match.rounds[match.rounds.length - 1];
+        logger.info(
+          { matchId, result: round.winner, moves: match.moves },
+          'match.resolved',
+        );
       }
     } catch (err) {
       this.emitError(socket, 'MOVE_FAILED', err);
@@ -124,6 +139,7 @@ export class SocketGateway implements MatchCallbacks {
       socket.leave(matchId);
       if (match.state === ENDED && match.winner) {
         socket.to(matchId).emit(ServerEvent.MatchForfeit, { winner: match.winner });
+        logger.info({ matchId, winner: match.winner, reason: 'leave' }, 'match.forfeited');
       }
     } catch (err) {
       this.emitError(socket, 'LEAVE_FAILED', err);
@@ -146,6 +162,7 @@ export class SocketGateway implements MatchCallbacks {
       playerName: disconnectedPlayer?.name ?? 'Unknown',
       timeoutMs: config.timer.reconnectTimeoutMs,
     });
+    logger.info({ matchId: matches.id, playerId, phase: match.state }, 'player.disconnected');
   }
 
   private async findMatchForPlayer(playerId: string): Promise<{ id: string } | null> {
@@ -160,5 +177,6 @@ export class SocketGateway implements MatchCallbacks {
     const message = err instanceof Error ? err.message : 'Unknown error';
     const payload: ErrorPayload = { code, message };
     socket.emit(ServerEvent.Error, payload);
+    logger.error({ code, socketId: socket.id, message }, 'error');
   }
 }
