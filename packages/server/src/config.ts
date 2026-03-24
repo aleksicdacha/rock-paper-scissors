@@ -13,4 +13,8 @@ export const config = {
     prefix: requireEnv('MATCH_PREFIX'),
     ttlSeconds: parseInt(requireEnv('MATCH_TTL_SECONDS'), 10),
   },
+  timer: {
+    moveTimeoutMs: parseInt(requireEnv('MOVE_TIMEOUT_MS'), 10),
+    reconnectTimeoutMs: parseInt(requireEnv('RECONNECT_TIMEOUT_MS'), 10),
+  },
 } as const;
