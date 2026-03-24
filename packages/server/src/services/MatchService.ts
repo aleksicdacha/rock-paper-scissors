@@ -18,6 +18,10 @@ export class MatchService {
     return this.store.get(matchId);
   }
 
+  async getAll(): Promise<Match[]> {
+    return this.store.all();
+  }
+
   async create(player: Player): Promise<Match> {
     const matchId = crypto.randomUUID();
     const match = createMatch(matchId, player);
