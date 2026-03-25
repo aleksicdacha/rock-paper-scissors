@@ -38,34 +38,61 @@ export const ResultView = () => {
       : lastResult?.winner === playerId;
 
     return (
-      <div>
-        <h2>{youWon ? 'You won the match!' : 'You lost the match.'}</h2>
-        {isForfeit && <p>Opponent forfeited.</p>}
+      <div className="text-center space-y-6">
+        <h2 className={`text-3xl font-bold ${youWon ? 'text-emerald-400' : 'text-red-400'}`}>
+          {youWon ? 'You won the match!' : 'You lost the match.'}
+        </h2>
+        {isForfeit && <p className="text-gray-400">Opponent forfeited.</p>}
         {!isForfeit && lastResult && (
-          <p>
-            You: {yourMove} — Opponent: {theirMove}
+          <p className="text-gray-300">
+            You: <span className="font-medium">{yourMove}</span> — Opponent: <span className="font-medium">{theirMove}</span>
           </p>
         )}
-        <p>
-          Score: {scores[playerIndex]} – {scores[opponentIndex]}
+        <p className="text-lg text-gray-300">
+          Score: <span className="font-bold">{scores[playerIndex]}</span> – <span className="font-bold">{scores[opponentIndex]}</span>
         </p>
-        <button onClick={handleLeave}>Back to Lobby</button>
+        <button
+          onClick={handleLeave}
+          className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg font-medium transition-colors"
+        >
+          Back to Lobby
+        </button>
       </div>
     );
   }
 
   return (
-    <div>
-      <h2>{roundLabel}</h2>
-      <p>
-        You: {yourMove} — Opponent: {theirMove}
+    <div className="text-center space-y-6">
+      <h2 className={`text-3xl font-bold ${
+        roundWinnerId === null
+          ? 'text-yellow-400'
+          : roundWinnerId === playerId
+            ? 'text-emerald-400'
+            : 'text-red-400'
+      }`}>
+        {roundLabel}
+      </h2>
+      <p className="text-gray-300">
+        You: <span className="font-medium">{yourMove}</span> — Opponent: <span className="font-medium">{theirMove}</span>
       </p>
-      <p>
-        Score: {scores[playerIndex]} – {scores[opponentIndex]}
+      <p className="text-lg text-gray-300">
+        Score: <span className="font-bold">{scores[playerIndex]}</span> – <span className="font-bold">{scores[opponentIndex]}</span>
       </p>
 
-      <button onClick={handleRematch}>Rematch</button>
-      <button onClick={handleLeave}>Leave</button>
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={handleRematch}
+          className="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-medium transition-colors"
+        >
+          Rematch
+        </button>
+        <button
+          onClick={handleLeave}
+          className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg font-medium transition-colors"
+        >
+          Leave
+        </button>
+      </div>
     </div>
   );
 };

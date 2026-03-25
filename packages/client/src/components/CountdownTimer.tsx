@@ -27,5 +27,11 @@ export const CountdownTimer = ({ timeoutAt }: CountdownTimerProps) => {
 
   if (!timeoutAt || seconds <= 0) return null;
 
-  return <div>{seconds}s</div>;
+  return (
+    <div className="text-center">
+      <span className={`text-4xl font-bold tabular-nums ${seconds <= 3 ? 'text-red-400' : 'text-white'}`}>
+        {seconds}s
+      </span>
+    </div>
+  );
 };
