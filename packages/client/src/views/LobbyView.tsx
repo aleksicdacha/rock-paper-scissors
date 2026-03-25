@@ -1,28 +1,21 @@
 import { useState } from 'react';
-import { useGameStore } from '../store/gameStore';
-import { socketService } from '../services/SocketService';
-import { PHASE_WAITING } from '../consts';
+import { LobbyViewProps } from '../interfaces/LobbyViewProps.interface';
 
-export const LobbyView = () => {
-  const { phase, matchId, error } = useGameStore();
+export const LobbyView = ({ isWaiting, matchId, error, onCreate, onJoin, onCopy }: LobbyViewProps) => {
   const [name, setName] = useState('');
   const [joinId, setJoinId] = useState('');
 
   const handleCreate = () => {
     if (!name.trim()) return;
-    socketService.createMatch(name.trim());
+    onCreate(name.trim());
   };
 
   const handleJoin = () => {
     if (!name.trim() || !joinId.trim()) return;
-    socketService.joinMatch(joinId.trim(), name.trim());
+    onJoin(joinId.trim(), name.trim());
   };
 
-  const handleCopy = () => {
-    if (matchId) navigator.clipboard.writeText(matchId);
-  };
-
-  if (phase === PHASE_WAITING && matchId) {
+  if (isWaiting && matchId) {
     return (
       <div className="text-center space-y-6">
         <div className="animate-pulse">
@@ -34,7 +27,7 @@ export const LobbyView = () => {
             {matchId}
           </code>
           <button
-            onClick={handleCopy}
+            onClick={onCopy}
             className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             Copy

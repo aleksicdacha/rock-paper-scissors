@@ -1,9 +1,9 @@
 import crypto from 'node:crypto';
 import { Server, Socket } from 'socket.io';
 import { ClientEvent, ServerEvent, Move, ErrorPayload, ENDED } from '@rps/shared';
+import { GameService } from '../interfaces/GameService.interface';
 import { MatchCallbacks } from '../interfaces/MatchCallbacks.interface';
-import { MatchService } from '../services/MatchService';
-import { GameService } from '../services/GameService';
+import { MatchService } from '../interfaces/MatchService.interface';
 import { buildGameState, buildMatchResult } from '../game/matchMappers';
 import { config } from '../config';
 import { logger } from '../logger';
