@@ -10,6 +10,10 @@ export function useLobby(socket: SocketService): LobbyViewProps {
     socket.createMatch(name);
   };
 
+  const onPlayComputer = (name: string) => {
+    socket.createMatch(name, 'computer');
+  };
+
   const onJoin = (matchId: string, name: string) => {
     socket.joinMatch(matchId, name);
   };
@@ -23,6 +27,7 @@ export function useLobby(socket: SocketService): LobbyViewProps {
     matchId,
     error,
     onCreate,
+    onPlayComputer,
     onJoin,
     onCopy,
   };

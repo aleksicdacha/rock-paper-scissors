@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { Player, WAITING, ENDED } from '@rps/shared';
+import { MatchMode, Player, WAITING, ENDED, PVP } from '@rps/shared';
 import { config } from '../../config';
 import { Match } from '../../models/Match.interface';
 import { GameService } from '../GameService/GameService.interface';
@@ -22,9 +22,9 @@ export class MatchService {
     return this.store.all();
   }
 
-  async create(player: Player): Promise<Match> {
+  async create(player: Player, mode: MatchMode = PVP): Promise<Match> {
     const matchId = crypto.randomUUID();
-    const match = createMatch(matchId, player);
+    const match = createMatch(matchId, player, mode);
     await this.store.set(matchId, match);
     return match;
   }

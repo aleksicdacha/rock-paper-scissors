@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WAITING } from '@rps/shared';
+import { WAITING, PVP, COMPUTER } from '@rps/shared';
 import type { Player } from '@rps/shared';
 import type { Match } from '../src/models/Match.interface';
 import { createMatch, playerIndex } from '../src/models/createMatch';
@@ -42,11 +42,22 @@ describe('createMatch', () => {
     expect(match.disconnectedPlayer).toBeNull();
     expect(match.winner).toBeNull();
   });
+
+  it('defaults mode to PVP', () => {
+    const match = createMatch('m-1', player);
+    expect(match.mode).toBe(PVP);
+  });
+
+  it('accepts explicit mode', () => {
+    const match = createMatch('m-1', player, COMPUTER);
+    expect(match.mode).toBe(COMPUTER);
+  });
 });
 
 describe('playerIndex', () => {
   const match: Match = {
     id: 'm-1',
+    mode: PVP,
     players: [
       { id: 'p1', name: 'Alice', socketId: 's1' },
       { id: 'p2', name: 'Bob', socketId: 's2' },

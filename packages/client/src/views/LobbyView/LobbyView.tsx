@@ -2,13 +2,18 @@ import { useState } from 'react';
 import { LobbyViewProps } from './LobbyViewProps.interface';
 import { gameConfig } from '../../gameConfig';
 
-export const LobbyView = ({ isWaiting, matchId, error, onCreate, onJoin, onCopy }: LobbyViewProps) => {
+export const LobbyView = ({ isWaiting, matchId, error, onCreate, onPlayComputer, onJoin, onCopy }: LobbyViewProps) => {
   const [name, setName] = useState('');
   const [joinId, setJoinId] = useState('');
 
   const handleCreate = () => {
     if (!name.trim()) return;
     onCreate(name.trim());
+  };
+
+  const handlePlayComputer = () => {
+    if (!name.trim()) return;
+    onPlayComputer(name.trim());
   };
 
   const handleJoin = () => {
@@ -86,6 +91,14 @@ export const LobbyView = ({ isWaiting, matchId, error, onCreate, onJoin, onCopy 
           </button>
         </div>
       </div>
+
+      <button
+        onClick={handlePlayComputer}
+        disabled={!name.trim()}
+        className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-gray-700 disabled:text-gray-500 px-4 py-3 rounded-lg font-medium transition-colors"
+      >
+        {gameConfig.lobby.vsComputerButton}
+      </button>
     </div>
   );
 };

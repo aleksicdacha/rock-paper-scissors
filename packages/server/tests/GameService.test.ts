@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PLAYING, RESOLVED, ENDED, WAITING, ROCK, PAPER, SCISSORS } from '@rps/shared';
+import { PLAYING, RESOLVED, ENDED, WAITING, ROCK, PAPER, SCISSORS, PVP } from '@rps/shared';
 import type { Move } from '@rps/shared';
 import type { Match } from '../src/models/Match.interface';
 import type { MatchStore } from '../src/store/MatchStore.interface';
@@ -15,6 +15,7 @@ vi.mock('../src/config', () => ({
 function createTestMatch(overrides: Partial<Match> = {}): Match {
   return {
     id: 'match-1',
+    mode: PVP,
     players: [
       { id: 'p1', name: 'Alice', socketId: 's1' },
       { id: 'p2', name: 'Bob', socketId: 's2' },

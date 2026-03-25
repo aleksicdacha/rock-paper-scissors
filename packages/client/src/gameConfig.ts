@@ -11,6 +11,7 @@ export const gameConfig = {
     createButton: 'Create',
     joinButton: 'Join',
     copyButton: 'Copy',
+    vsComputerButton: 'Play vs Computer',
     waitingHeading: 'Waiting for opponent...',
     waitingSubtext: 'Share this code with your opponent:',
   },

@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { PLAYING, RESOLVED, ENDED, ROCK, SCISSORS } from '@rps/shared';
+import { PLAYING, RESOLVED, ENDED, ROCK, SCISSORS, PVP } from '@rps/shared';
 import type { Match } from '../src/models/Match.interface';
 import { buildGameState, buildMatchResult } from '../src/game/matchMappers';
 
 function createTestMatch(overrides: Partial<Match> = {}): Match {
   return {
     id: 'match-1',
+    mode: PVP,
     players: [
       { id: 'p1', name: 'Alice', socketId: 's1' },
       { id: 'p2', name: 'Bob', socketId: 's2' },

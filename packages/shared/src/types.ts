@@ -1,5 +1,7 @@
 export type Move = 'rock' | 'paper' | 'scissors';
 
+export type MatchMode = 'pvp' | 'computer';
+
 export type MatchState = 'WAITING' | 'PLAYING' | 'RESOLVED' | 'ENDED';
 
 export interface Player {

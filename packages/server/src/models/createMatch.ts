@@ -1,9 +1,10 @@
-import { Player, WAITING } from '@rps/shared';
+import { MatchMode, Player, PVP, WAITING } from '@rps/shared';
 import { Match } from './Match.interface';
 
-export function createMatch(id: string, player: Player): Match {
+export function createMatch(id: string, player: Player, mode: MatchMode = PVP): Match {
   return {
     id,
+    mode,
     players: [player, null],
     state: WAITING,
     rounds: [],

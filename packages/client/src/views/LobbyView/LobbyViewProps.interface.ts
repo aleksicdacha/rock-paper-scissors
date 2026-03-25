@@ -5,6 +5,7 @@ export interface LobbyViewProps {
   matchId: string | null;
   error: ErrorPayload | null;
   onCreate: (name: string) => void;
+  onPlayComputer: (name: string) => void;
   onJoin: (matchId: string, name: string) => void;
   onCopy: () => void;
 }
