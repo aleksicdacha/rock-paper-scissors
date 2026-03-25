@@ -1,5 +1,5 @@
 import { Player, WAITING } from '@rps/shared';
-import { Match } from '../interfaces/Match.interface';
+import { Match } from './Match.interface';
 
 export function createMatch(id: string, player: Player): Match {
   return {

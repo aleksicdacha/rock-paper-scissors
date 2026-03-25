@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { CountdownTimerProps } from '../interfaces/CountdownTimerProps.interface';
-import { TICK_INTERVAL } from '../consts';
-import { calcRemaining } from '../helpers/calcRemaining';
+import { CountdownTimerProps } from './CountdownTimerProps.interface';
+import { TICK_INTERVAL } from './CountdownTimer.consts';
+import { calcRemaining } from './calcRemaining';
 
 export const CountdownTimer = ({ timeoutAt }: CountdownTimerProps) => {
   const [seconds, setSeconds] = useState(() =>

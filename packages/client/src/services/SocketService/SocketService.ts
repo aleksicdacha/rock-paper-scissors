@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { ClientEvent, ServerEvent, Move } from '@rps/shared';
-import { PLAYER_ID_KEY, SERVER_URL } from '../consts';
+import { PLAYER_ID_KEY, SERVER_URL } from './SocketService.consts';
 
 function getOrCreatePlayerId(): string {
   const existing = localStorage.getItem(PLAYER_ID_KEY);

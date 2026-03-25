@@ -1,12 +1,12 @@
 import crypto from 'node:crypto';
 import { Server, Socket } from 'socket.io';
 import { ClientEvent, ServerEvent, Move, ErrorPayload, ENDED } from '@rps/shared';
-import { MatchCallbacks } from '../interfaces/MatchCallbacks.interface';
-import { MatchService } from '../services/MatchService';
-import { GameService } from '../services/GameService';
-import { buildGameState, buildMatchResult } from '../game/matchMappers';
-import { config } from '../config';
-import { logger } from '../logger';
+import { GameService } from '../../services/GameService/GameService.interface';
+import { MatchCallbacks } from './MatchCallbacks.interface';
+import { MatchService } from '../../services/MatchService/MatchService.interface';
+import { buildGameState, buildMatchResult } from '../../game/matchMappers';
+import { config } from '../../config';
+import { logger } from '../../logger';
 
 export class SocketGateway implements MatchCallbacks {
   private socketsByPlayerId = new Map<string, string>();

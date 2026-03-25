@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
 import { Player, WAITING, ENDED } from '@rps/shared';
-import { config } from '../config';
-import { Match } from '../interfaces/Match.interface';
-import { MatchStore } from '../interfaces/MatchStore.interface';
-import { createMatch, playerIndex } from '../models/createMatch';
-import { GameService } from './GameService';
+import { config } from '../../config';
+import { Match } from '../../models/Match.interface';
+import { GameService } from '../GameService/GameService.interface';
+import { MatchStore } from '../../store/MatchStore.interface';
+import { createMatch, playerIndex } from '../../models/createMatch';
 
 export class MatchService {
   private disconnectTimers = new Map<string, NodeJS.Timeout>();

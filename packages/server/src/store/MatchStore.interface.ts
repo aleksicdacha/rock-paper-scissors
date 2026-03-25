@@ -1,4 +1,4 @@
-import { Match } from './Match.interface';
+import { Match } from '../models/Match.interface';
 
 export interface MatchStore {
   get(matchId: string): Promise<Match | undefined>;

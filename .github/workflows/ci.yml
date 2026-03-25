@@ -117,6 +117,16 @@ jobs:
     needs: [changes, client-build]
     if: needs.changes.outputs.client == 'true'
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -126,7 +136,10 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/server
       - run: npm run build --workspace=packages/client
+        env:
+          VITE_SERVER_URL: http://localhost:3001
       - run: npm run test:e2e --workspace=packages/client
       - uses: actions/upload-artifact@v4
         if: failure()

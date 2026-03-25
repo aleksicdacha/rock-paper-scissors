@@ -1,56 +1,34 @@
 import { useEffect } from 'react';
-import {
-  ServerEvent,
-  GameState,
-  MatchResult,
-  ErrorPayload,
-} from '@rps/shared';
-import { socketService } from '../services/SocketService';
+import { ServerEvent } from '@rps/shared';
 import { useGameStore } from '../store/gameStore';
+import { GameStoreActions } from '../store/GameStore.interface';
+import { SocketService } from '../services/SocketService/SocketService.interface';
 
-export function useSocket(): void {
-  const {
-    onMatchCreated,
-    onGameState,
-    onGameResult,
-    onRematchReady,
-    onPlayerDisconnected,
-    onPlayerReconnected,
-    onForfeit,
-    onError,
-  } = useGameStore();
+type EventBinding = [ServerEvent, (...args: never[]) => void];
 
+function buildEventBindings(actions: GameStoreActions): EventBinding[] {
+  return [
+    [ServerEvent.MatchCreated, actions.onMatchCreated],
+    [ServerEvent.GameState, actions.onGameState],
+    [ServerEvent.GameResult, actions.onGameResult],
+    [ServerEvent.GameRematchReady, actions.onRematchReady],
+    [ServerEvent.PlayerDisconnected, actions.onPlayerDisconnected],
+    [ServerEvent.PlayerReconnected, actions.onPlayerReconnected],
+    [ServerEvent.MatchForfeit, actions.onForfeit],
+    [ServerEvent.Error, actions.onError],
+  ];
+}
+
+export function useSocket(socket: SocketService): void {
   useEffect(() => {
-    socketService.connect();
+    socket.connect();
 
-    socketService.on<{ matchId: string }>(ServerEvent.MatchCreated, onMatchCreated);
-    socketService.on<GameState>(ServerEvent.GameState, onGameState);
-    socketService.on<MatchResult>(ServerEvent.GameResult, onGameResult);
-    socketService.on<{ matchId: string }>(ServerEvent.GameRematchReady, onRematchReady);
-    socketService.on<{ playerName: string; timeoutMs: number }>(ServerEvent.PlayerDisconnected, onPlayerDisconnected);
-    socketService.on<{ playerName: string }>(ServerEvent.PlayerReconnected, onPlayerReconnected);
-    socketService.on<{ winner: string }>(ServerEvent.MatchForfeit, onForfeit);
-    socketService.on<ErrorPayload>(ServerEvent.Error, onError);
+    const bindings = buildEventBindings(useGameStore.getState());
+    bindings.forEach(([event, handler]) => socket.on(event, handler));
 
     return () => {
-      socketService.off(ServerEvent.MatchCreated);
-      socketService.off(ServerEvent.GameState);
-      socketService.off(ServerEvent.GameResult);
-      socketService.off(ServerEvent.GameRematchReady);
-      socketService.off(ServerEvent.PlayerDisconnected);
-      socketService.off(ServerEvent.PlayerReconnected);
-      socketService.off(ServerEvent.MatchForfeit);
-      socketService.off(ServerEvent.Error);
-      socketService.disconnect();
+      bindings.forEach(([event]) => socket.off(event));
+      socket.disconnect();
     };
-  }, [
-    onMatchCreated,
-    onGameState,
-    onGameResult,
-    onRematchReady,
-    onPlayerDisconnected,
-    onPlayerReconnected,
-    onForfeit,
-    onError,
-  ]);
+  }, [socket]);
 }

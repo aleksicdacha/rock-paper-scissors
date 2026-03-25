@@ -5,7 +5,7 @@ import {
   Move,
   MatchState,
 } from '@rps/shared';
-import { Phase } from '../types';
+import { Phase } from './GameStore.types';
 
 export interface GameStoreState {
   phase: Phase;

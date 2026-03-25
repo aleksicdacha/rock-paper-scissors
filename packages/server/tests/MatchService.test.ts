@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WAITING, PLAYING, ENDED } from '@rps/shared';
-import type { Match } from '../src/interfaces/Match.interface';
-import type { MatchStore } from '../src/interfaces/MatchStore.interface';
+import type { Match } from '../src/models/Match.interface';
+import type { MatchStore } from '../src/store/MatchStore.interface';
 
 vi.mock('../src/config', () => ({
   config: {
     timer: { moveTimeoutMs: 10_000, reconnectTimeoutMs: 30_000 },
+    corsOrigin: '*',
   },
 }));
 
@@ -63,7 +64,7 @@ function createMockGameService() {
 }
 
 async function loadMatchService() {
-  const mod = await import('../src/services/MatchService');
+  const mod = await import('../src/services/MatchService/MatchService');
   return mod.MatchService;
 }
 
@@ -312,6 +313,86 @@ describe('MatchService', () => {
       const result = await svc.getAll();
 
       expect(result).toHaveLength(2);
+    });
+  });
+
+  describe('create — id generation', () => {
+    it('creates matches with unique IDs', async () => {
+      const store = createMockStore();
+      const svc = new MatchService(store, createMockGameService() as never);
+
+      const m1 = await svc.create(p1);
+      const m2 = await svc.create(p2);
+
+      expect(m1.id).not.toBe(m2.id);
+    });
+  });
+
+  describe('leave — edge cases', () => {
+    it('throws if match not found', async () => {
+      const store = createMockStore();
+      const svc = new MatchService(store, createMockGameService() as never);
+
+      await expect(svc.leave('nonexistent', 'p1')).rejects.toThrow('Match not found');
+    });
+
+    it('delegates to forfeit for RESOLVED state', async () => {
+      const match = createTestMatch({ state: 'RESOLVED' as never });
+      const store = createMockStore([match]);
+      const gameService = createMockGameService();
+      const svc = new MatchService(store, gameService as never);
+
+      await svc.leave('match-1', 'p1');
+
+      expect(gameService.forfeit).toHaveBeenCalledWith('match-1', 'p1');
+    });
+  });
+
+  describe('disconnect — RESOLVED state', () => {
+    it('marks disconnectedPlayer and starts timer for RESOLVED match', async () => {
+      const match = createTestMatch({ state: 'RESOLVED' as never });
+      const store = createMockStore([match]);
+      const svc = new MatchService(store, createMockGameService() as never);
+
+      const result = await svc.disconnect('match-1', 'p1');
+
+      expect(result).not.toBeNull();
+      expect(result!.disconnectedPlayer).toBe('p1');
+    });
+  });
+
+  describe('reconnect — socket id update', () => {
+    it('updates player 2 socket id on reconnect', async () => {
+      const match = createTestMatch({ disconnectedPlayer: 'p2' });
+      const store = createMockStore([match]);
+      const svc = new MatchService(store, createMockGameService() as never);
+
+      const result = await svc.reconnect('match-1', 'p2', 'new-socket-2');
+
+      expect(result.players[1]!.socketId).toBe('new-socket-2');
+      expect(result.disconnectedPlayer).toBeNull();
+    });
+  });
+
+  describe('disconnect timeout — multiple disconnects', () => {
+    it('second disconnect replaces the first timer', async () => {
+      const match = createTestMatch({ state: PLAYING });
+      const store = createMockStore([match]);
+      const gameService = createMockGameService();
+      const svc = new MatchService(store, gameService as never);
+
+      await svc.disconnect('match-1', 'p1');
+
+      // Re-store match to simulate reconnect + second disconnect
+      await store.set('match-1', createTestMatch({ state: PLAYING, disconnectedPlayer: null }));
+      await svc.disconnect('match-1', 'p2');
+
+      // Only p2's timer should fire after 30s
+      vi.advanceTimersByTime(30_000);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(gameService.forfeit).toHaveBeenCalledWith('match-1', 'p2');
+      expect(gameService.forfeit).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -1,10 +1,10 @@
 import { Move, ENDED, PLAYING, RESOLVED } from '@rps/shared';
-import { config } from '../config';
-import { resolveRound } from '../game/gameLogic';
-import { Match } from '../interfaces/Match.interface';
-import { MatchCallbacks } from '../interfaces/MatchCallbacks.interface';
-import { MatchStore } from '../interfaces/MatchStore.interface';
-import { playerIndex } from '../models/createMatch';
+import { config } from '../../config';
+import { resolveRound } from '../../game/gameLogic';
+import { Match } from '../../models/Match.interface';
+import { MatchCallbacks } from '../../gateway/SocketGateway/MatchCallbacks.interface';
+import { MatchStore } from '../../store/MatchStore.interface';
+import { playerIndex } from '../../models/createMatch';
 
 export class GameService {
   private moveTimers = new Map<string, NodeJS.Timeout>();
