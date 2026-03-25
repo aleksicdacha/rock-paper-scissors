@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PLAYING, RESOLVED, ENDED, WAITING, ROCK, PAPER, SCISSORS } from '@rps/shared';
+import type { Move } from '@rps/shared';
 import type { Match } from '../src/models/Match.interface';
 import type { MatchStore } from '../src/store/MatchStore.interface';
 import type { MatchCallbacks } from '../src/gateway/SocketGateway/MatchCallbacks.interface';
@@ -304,6 +305,144 @@ describe('GameService', () => {
 
       // Timer should have been cleared — callback not called from timeout
       expect(callbacks.onRoundResolved).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('submitMove — all move combinations', () => {
+    const combos: [Move, Move, number | null][] = [
+      [ROCK, SCISSORS, 0],
+      [SCISSORS, PAPER, 0],
+      [PAPER, ROCK, 0],
+      [SCISSORS, ROCK, 1],
+      [PAPER, SCISSORS, 1],
+      [ROCK, PAPER, 1],
+      [ROCK, ROCK, null],
+      [PAPER, PAPER, null],
+      [SCISSORS, SCISSORS, null],
+    ];
+
+    it.each(combos)('%s vs %s → winner=%s', async (m1, m2, expectedWinner) => {
+      const match = createTestMatch({ state: PLAYING, moves: [m1, null] });
+      const store = createMockStore(match);
+      const svc = new GameService(store, createMockCallbacks());
+
+      const { match: updated } = await svc.submitMove('match-1', 'p2', m2);
+
+      expect(updated.rounds[0].winner).toBe(expectedWinner);
+    });
+  });
+
+  describe('submitMove — scores accumulate', () => {
+    it('increments winner score across rounds', async () => {
+      const match = createTestMatch({
+        state: PLAYING,
+        moves: [ROCK, null],
+        scores: [3, 2],
+        rounds: [
+          { moves: [ROCK, SCISSORS], winner: 0 },
+          { moves: [ROCK, SCISSORS], winner: 0 },
+          { moves: [ROCK, SCISSORS], winner: 0 },
+          { moves: [SCISSORS, ROCK], winner: 1 },
+          { moves: [SCISSORS, ROCK], winner: 1 },
+        ],
+      });
+      const store = createMockStore(match);
+      const svc = new GameService(store, createMockCallbacks());
+
+      const { match: updated } = await svc.submitMove('match-1', 'p2', SCISSORS);
+
+      expect(updated.scores).toEqual([4, 2]);
+    });
+
+    it('does not change scores on draw', async () => {
+      const match = createTestMatch({
+        state: PLAYING,
+        moves: [ROCK, null],
+        scores: [1, 1],
+        rounds: [{ moves: [ROCK, SCISSORS], winner: 0 }, { moves: [SCISSORS, ROCK], winner: 1 }],
+      });
+      const store = createMockStore(match);
+      const svc = new GameService(store, createMockCallbacks());
+
+      const { match: updated } = await svc.submitMove('match-1', 'p2', ROCK);
+
+      expect(updated.scores).toEqual([1, 1]);
+    });
+  });
+
+  describe('submitMove — match not found', () => {
+    it('throws if match does not exist', async () => {
+      const store = createMockStore();
+      const svc = new GameService(store, createMockCallbacks());
+
+      await expect(svc.submitMove('nonexistent', 'p1', ROCK)).rejects.toThrow('Match not found');
+    });
+  });
+
+  describe('requestRematch — edge cases', () => {
+    it('throws if match not found', async () => {
+      const store = createMockStore();
+      const svc = new GameService(store, createMockCallbacks());
+
+      await expect(svc.requestRematch('nonexistent', 'p1')).rejects.toThrow('Match not found');
+    });
+
+    it('throws if player is not in match', async () => {
+      const match = createTestMatch({ state: RESOLVED });
+      const store = createMockStore(match);
+      const svc = new GameService(store, createMockCallbacks());
+
+      await expect(svc.requestRematch('match-1', 'stranger')).rejects.toThrow('Player not in match');
+    });
+
+    it('new round after rematch has fresh timeoutAt', async () => {
+      const match = createTestMatch({ state: RESOLVED, rematchRequested: [true, false] });
+      const store = createMockStore(match);
+      const svc = new GameService(store, createMockCallbacks());
+
+      const { match: updated } = await svc.requestRematch('match-1', 'p2');
+
+      expect(updated.timeoutAt).toBeTypeOf('number');
+      expect(updated.timeoutAt).toBeGreaterThan(0);
+    });
+  });
+
+  describe('forfeit — edge cases', () => {
+    it('throws if match not found', async () => {
+      const store = createMockStore();
+      const svc = new GameService(store, createMockCallbacks());
+
+      await expect(svc.forfeit('nonexistent', 'p1')).rejects.toThrow('Match not found');
+    });
+
+    it('clears timeoutAt on forfeit', async () => {
+      const match = createTestMatch({ state: PLAYING, timeoutAt: Date.now() + 10000 });
+      const store = createMockStore(match);
+      const svc = new GameService(store, createMockCallbacks());
+
+      const result = await svc.forfeit('match-1', 'p1');
+
+      expect(result.timeoutAt).toBeNull();
+    });
+
+    it('works from RESOLVED state', async () => {
+      const match = createTestMatch({ state: RESOLVED });
+      const store = createMockStore(match);
+      const svc = new GameService(store, createMockCallbacks());
+
+      const result = await svc.forfeit('match-1', 'p2');
+
+      expect(result.state).toBe(ENDED);
+      expect(result.winner).toBe('p1');
+    });
+  });
+
+  describe('clearMoveTimer', () => {
+    it('is safe to call when no timer exists', () => {
+      const store = createMockStore();
+      const svc = new GameService(store, createMockCallbacks());
+
+      expect(() => svc.clearMoveTimer('nonexistent')).not.toThrow();
     });
   });
 });

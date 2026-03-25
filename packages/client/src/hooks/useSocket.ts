@@ -20,17 +20,15 @@ function buildEventBindings(actions: GameStoreActions): EventBinding[] {
 }
 
 export function useSocket(socket: SocketService): void {
-  const store = useGameStore();
-
   useEffect(() => {
     socket.connect();
 
-    const bindings = buildEventBindings(store);
+    const bindings = buildEventBindings(useGameStore.getState());
     bindings.forEach(([event, handler]) => socket.on(event, handler));
 
     return () => {
       bindings.forEach(([event]) => socket.off(event));
       socket.disconnect();
     };
-  }, [socket, store]);
+  }, [socket]);
 }
