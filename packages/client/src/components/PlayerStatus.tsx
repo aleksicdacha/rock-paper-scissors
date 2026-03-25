@@ -1,9 +1,4 @@
-interface PlayerStatusProps {
-  name: string;
-  score: number;
-  moved: boolean;
-  isYou?: boolean;
-}
+import { PlayerStatusProps } from '../interfaces/PlayerStatusProps.interface';
 
 export const PlayerStatus = ({ name, score, moved, isYou }: PlayerStatusProps) => {
   return (

@@ -1,16 +1,14 @@
-import { Move } from '@rps/shared';
-
-interface MoveSelectorProps {
-  onSelect: (move: Move) => void;
-  disabled: boolean;
-}
+import { MoveSelectorProps } from '../interfaces/MoveSelectorProps.interface';
+import { MOVES } from '../consts';
 
 export const MoveSelector = ({ onSelect, disabled }: MoveSelectorProps) => {
   return (
     <div>
-      <button onClick={() => onSelect('rock')} disabled={disabled}>Rock</button>
-      <button onClick={() => onSelect('paper')} disabled={disabled}>Paper</button>
-      <button onClick={() => onSelect('scissors')} disabled={disabled}>Scissors</button>
+      {MOVES.map((move) => (
+        <button key={move} onClick={() => onSelect(move)} disabled={disabled}>
+          {move.charAt(0).toUpperCase() + move.slice(1)}
+        </button>
+      ))}
     </div>
   );
 };
