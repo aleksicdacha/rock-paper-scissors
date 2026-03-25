@@ -1,5 +1,9 @@
+import { ROCK, PAPER, SCISSORS, Move } from '@rps/shared';
 import { Phase } from './types';
 import { GameStoreState } from './interfaces/GameStore.interface';
+
+export const MOVES: readonly Move[] = [ROCK, PAPER, SCISSORS];
+export const TICK_INTERVAL = 1000;
 
 export const PLAYER_ID_KEY = 'rps_player_id';
 export const SERVER_URL =
