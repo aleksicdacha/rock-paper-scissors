@@ -15,7 +15,9 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'npm run dev --workspace=packages/server',
+      command: process.env.CI
+        ? 'npm run start --workspace=packages/server'
+        : 'npm run dev --workspace=packages/server',
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
       cwd: '../..',

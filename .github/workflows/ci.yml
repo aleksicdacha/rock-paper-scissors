@@ -136,6 +136,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/server
       - run: npm run build --workspace=packages/client
       - run: npm run test:e2e --workspace=packages/client
       - uses: actions/upload-artifact@v4
