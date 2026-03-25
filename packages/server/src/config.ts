@@ -17,4 +17,5 @@ export const config = {
     moveTimeoutMs: parseInt(requireEnv('MOVE_TIMEOUT_MS'), 10),
     reconnectTimeoutMs: parseInt(requireEnv('RECONNECT_TIMEOUT_MS'), 10),
   },
+  corsOrigin: requireEnv('CORS_ORIGIN'),
 } as const;

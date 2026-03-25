@@ -1,12 +1,12 @@
 import { WAITING, PLAYING, RESOLVED, ENDED } from '@rps/shared';
 import type { MatchState } from '@rps/shared';
-import { Phase } from '../types';
+import { Phase } from './GameStore.types';
 import {
   PHASE_WAITING,
   PHASE_PLAYING,
   PHASE_RESOLVED,
   PHASE_FINISHED,
-} from '../consts';
+} from './GameStore.consts';
 
 const PHASE_MAP = {
   [WAITING]: PHASE_WAITING,

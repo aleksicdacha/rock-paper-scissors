@@ -1,7 +1,8 @@
-import { MoveSelector } from '../components/MoveSelector';
-import { CountdownTimer } from '../components/CountdownTimer';
-import { PlayerStatus } from '../components/PlayerStatus';
-import { GameViewProps } from '../interfaces/GameViewProps.interface';
+import { MoveSelector } from '../../components/MoveSelector/MoveSelector';
+import { CountdownTimer } from '../../components/CountdownTimer/CountdownTimer';
+import { PlayerStatus } from '../../components/PlayerStatus/PlayerStatus';
+import { GameViewProps } from './GameViewProps.interface';
+import { gameConfig } from '../../gameConfig';
 
 export const GameView = ({
   playerName,
@@ -19,7 +20,7 @@ export const GameView = ({
     <div className="space-y-8">
       {opponentDisconnected && (
         <div className="bg-yellow-900/30 border border-yellow-700 text-yellow-300 text-sm text-center rounded-lg px-4 py-2 animate-pulse">
-          Opponent disconnected — waiting for reconnect...
+          {gameConfig.game.disconnectedBanner}
         </div>
       )}
 
@@ -43,7 +44,7 @@ export const GameView = ({
 
       {selectedMove && (
         <p className="text-center text-gray-400 text-sm animate-pulse">
-          You chose {selectedMove} — waiting for opponent...
+          {gameConfig.game.waitingForOpponent(selectedMove)}
         </p>
       )}
     </div>

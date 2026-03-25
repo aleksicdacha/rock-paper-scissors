@@ -1,7 +1,8 @@
 import { useGameStore } from '../store/gameStore';
-import { PHASE_FINISHED } from '../consts';
-import { ResultViewProps } from '../interfaces/ResultViewProps.interface';
-import { SocketService } from '../interfaces/SocketService.interface';
+import { PHASE_FINISHED } from '../store/GameStore.consts';
+import { gameConfig } from '../gameConfig';
+import { ResultViewProps } from '../views/ResultView/ResultViewProps.interface';
+import { SocketService } from '../services/SocketService/SocketService.interface';
 
 export function useResult(socket: SocketService): ResultViewProps {
   const { phase, matchId, players, scores, lastResult, forfeitWinner, reset } =
@@ -15,8 +16,8 @@ export function useResult(socket: SocketService): ResultViewProps {
   const isForfeit = !!forfeitWinner;
 
   const roundMoves = lastResult?.round.moves;
-  const yourMove = roundMoves?.[playerIndex] ?? 'timeout';
-  const theirMove = roundMoves?.[opponentIndex] ?? 'timeout';
+  const yourMove = roundMoves?.[playerIndex] ?? gameConfig.result.movesFallback;
+  const theirMove = roundMoves?.[opponentIndex] ?? gameConfig.result.movesFallback;
 
   const roundWinnerId = lastResult?.winner;
   const isDraw = roundWinnerId === null;
@@ -25,10 +26,10 @@ export function useResult(socket: SocketService): ResultViewProps {
     : roundWinnerId === playerId;
 
   const roundLabel = isDraw
-    ? 'Draw!'
+    ? gameConfig.result.roundDraw
     : youWon
-      ? 'You win this round!'
-      : 'You lose this round.';
+      ? gameConfig.result.roundWin
+      : gameConfig.result.roundLose;
 
   const onRematch = () => {
     if (matchId) socket.requestRematch(matchId);

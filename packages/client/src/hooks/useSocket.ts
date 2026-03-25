@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { ServerEvent } from '@rps/shared';
 import { useGameStore } from '../store/gameStore';
-import { GameStoreActions } from '../interfaces/GameStore.interface';
-import { SocketService } from '../interfaces/SocketService.interface';
+import { GameStoreActions } from '../store/GameStore.interface';
+import { SocketService } from '../services/SocketService/SocketService.interface';
 
 type EventBinding = [ServerEvent, (...args: never[]) => void];
 

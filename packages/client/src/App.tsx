@@ -3,17 +3,17 @@ import { useGameStore } from './store/gameStore';
 import { useLobby } from './hooks/useLobby';
 import { useGame } from './hooks/useGame';
 import { useResult } from './hooks/useResult';
-import { socketService } from './services/SocketService';
+import { socketService } from './services/SocketService/SocketService';
 import {
   PHASE_IDLE,
   PHASE_WAITING,
   PHASE_PLAYING,
   PHASE_RESOLVED,
   PHASE_FINISHED,
-} from './consts';
-import { LobbyView } from './views/LobbyView';
-import { GameView } from './views/GameView';
-import { ResultView } from './views/ResultView';
+} from './store/GameStore.consts';
+import { LobbyView } from './views/LobbyView/LobbyView';
+import { GameView } from './views/GameView/GameView';
+import { ResultView } from './views/ResultView/ResultView';
 
 export const App = () => {
   useSocket(socketService);

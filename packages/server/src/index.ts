@@ -4,17 +4,17 @@ import express from 'express';
 import { Server } from 'socket.io';
 import Redis from 'ioredis';
 import { config } from './config';
-import { RedisMatchStore } from './store/RedisMatchStore';
-import { GameService } from './services/GameService';
-import { MatchService } from './services/MatchService';
-import { SocketGateway } from './gateway/SocketGateway';
+import { RedisMatchStore } from './store/RedisMatchStore/RedisMatchStore';
+import { GameService } from './services/GameService/GameService';
+import { MatchService } from './services/MatchService/MatchService';
+import { SocketGateway } from './gateway/SocketGateway/SocketGateway';
 import { logger } from './logger';
 
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: '*' },
+  cors: { origin: config.corsOrigin },
 });
 
 const redis = new Redis(config.redis.url);

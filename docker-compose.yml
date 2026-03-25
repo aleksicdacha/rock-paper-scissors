@@ -23,6 +23,7 @@ services:
       - MATCH_TTL_SECONDS=3600
       - MOVE_TIMEOUT_MS=10000
       - RECONNECT_TIMEOUT_MS=30000
+      - CORS_ORIGIN=*
     depends_on:
       redis:
         condition: service_healthy
@@ -38,6 +39,8 @@ services:
       - '5173:5173'
     environment:
       - NODE_ENV=development
+      - VITE_SERVER_URL=http://server:3001
+      - VITE_PORT=5173
     depends_on:
       - server
     volumes:

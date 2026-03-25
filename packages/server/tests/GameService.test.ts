@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PLAYING, RESOLVED, ENDED, WAITING, ROCK, PAPER, SCISSORS } from '@rps/shared';
-import type { Match } from '../src/interfaces/Match.interface';
-import type { MatchStore } from '../src/interfaces/MatchStore.interface';
-import type { MatchCallbacks } from '../src/interfaces/MatchCallbacks.interface';
+import type { Match } from '../src/models/Match.interface';
+import type { MatchStore } from '../src/store/MatchStore.interface';
+import type { MatchCallbacks } from '../src/gateway/SocketGateway/MatchCallbacks.interface';
 
 vi.mock('../src/config', () => ({
   config: {
     timer: { moveTimeoutMs: 10_000, reconnectTimeoutMs: 30_000 },
+    corsOrigin: '*',
   },
 }));
 
@@ -57,7 +58,7 @@ function createMockCallbacks(): MatchCallbacks {
 
 // Dynamic import so the vi.mock for config is applied first
 async function loadGameService() {
-  const mod = await import('../src/services/GameService');
+  const mod = await import('../src/services/GameService/GameService');
   return mod.GameService;
 }
 

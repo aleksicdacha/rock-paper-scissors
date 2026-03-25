@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WAITING, PLAYING, ENDED } from '@rps/shared';
-import type { Match } from '../src/interfaces/Match.interface';
-import type { MatchStore } from '../src/interfaces/MatchStore.interface';
+import type { Match } from '../src/models/Match.interface';
+import type { MatchStore } from '../src/store/MatchStore.interface';
 
 vi.mock('../src/config', () => ({
   config: {
     timer: { moveTimeoutMs: 10_000, reconnectTimeoutMs: 30_000 },
+    corsOrigin: '*',
   },
 }));
 
@@ -63,7 +64,7 @@ function createMockGameService() {
 }
 
 async function loadMatchService() {
-  const mod = await import('../src/services/MatchService');
+  const mod = await import('../src/services/MatchService/MatchService');
   return mod.MatchService;
 }
 

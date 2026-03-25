@@ -1,4 +1,5 @@
-import { ResultViewProps } from '../interfaces/ResultViewProps.interface';
+import { ResultViewProps } from './ResultViewProps.interface';
+import { gameConfig } from '../../gameConfig';
 
 export const ResultView = ({
   isFinished,
@@ -17,9 +18,9 @@ export const ResultView = ({
     return (
       <div className="text-center space-y-6">
         <h2 className={`text-3xl font-bold ${youWon ? 'text-emerald-400' : 'text-red-400'}`}>
-          {youWon ? 'You won the match!' : 'You lost the match.'}
+          {youWon ? gameConfig.result.matchWin : gameConfig.result.matchLose}
         </h2>
-        {isForfeit && <p className="text-gray-400">Opponent forfeited.</p>}
+        {isForfeit && <p className="text-gray-400">{gameConfig.result.forfeitNote}</p>}
         {!isForfeit && (
           <p className="text-gray-300">
             You: <span className="font-medium">{yourMove}</span> — Opponent: <span className="font-medium">{theirMove}</span>
@@ -32,7 +33,7 @@ export const ResultView = ({
           onClick={onLeave}
           className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg font-medium transition-colors"
         >
-          Back to Lobby
+          {gameConfig.result.backToLobbyButton}
         </button>
       </div>
     );
@@ -61,13 +62,13 @@ export const ResultView = ({
           onClick={onRematch}
           className="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-medium transition-colors"
         >
-          Rematch
+          {gameConfig.result.rematchButton}
         </button>
         <button
           onClick={onLeave}
           className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg font-medium transition-colors"
         >
-          Leave
+          {gameConfig.result.leaveButton}
         </button>
       </div>
     </div>

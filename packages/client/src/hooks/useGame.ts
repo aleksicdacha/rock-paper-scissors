@@ -1,7 +1,7 @@
 import { Move } from '@rps/shared';
 import { useGameStore } from '../store/gameStore';
-import { GameViewProps } from '../interfaces/GameViewProps.interface';
-import { SocketService } from '../interfaces/SocketService.interface';
+import { GameViewProps } from '../views/GameView/GameViewProps.interface';
+import { SocketService } from '../services/SocketService/SocketService.interface';
 
 export function useGame(socket: SocketService): GameViewProps {
   const { matchId, players, scores, timeoutAt, moved, selectedMove, opponentDisconnected } =

@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
-import { config } from '../config';
-import { Match } from '../interfaces/Match.interface';
-import { MatchStore } from '../interfaces/MatchStore.interface';
+import { config } from '../../config';
+import { Match } from '../../models/Match.interface';
+import { MatchStore } from '../MatchStore.interface';
 
 export class RedisMatchStore implements MatchStore {
   constructor(private readonly redis: Redis) {}

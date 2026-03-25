@@ -1,5 +1,5 @@
 import { GameState, MatchResult, ENDED } from '@rps/shared';
-import { Match } from '../interfaces/Match.interface';
+import { Match } from '../models/Match.interface';
 
 export function buildGameState(match: Match): GameState {
   return {

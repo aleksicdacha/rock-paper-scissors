@@ -1,5 +1,5 @@
 import { Player } from '@rps/shared';
-import { Match } from './Match.interface';
+import { Match } from '../../models/Match.interface';
 
 export interface MatchService {
   get(matchId: string): Promise<Match | undefined>;

@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { ENDED } from '@rps/shared';
-import { GameStore } from '../interfaces/GameStore.interface';
+import { GameStore } from './GameStore.interface';
 import {
   INITIAL_GAME_STATE,
   PHASE_WAITING,
   PHASE_FINISHED,
   PHASE_RESOLVED,
-} from '../consts';
-import { phaseFromMatchState } from '../helpers/phaseFromMatchState';
+} from './GameStore.consts';
+import { phaseFromMatchState } from './phaseFromMatchState';
 
 export const useGameStore = create<GameStore>()((set) => ({
   ...INITIAL_GAME_STATE,
