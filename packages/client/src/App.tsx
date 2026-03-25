@@ -15,16 +15,22 @@ export const App = () => {
   useSocket();
   const phase = useGameStore((s) => s.phase);
 
-  switch (phase) {
-    case PHASE_IDLE:
-      return <LobbyView />;
-    case PHASE_WAITING:
-      return <LobbyView />;
-    case PHASE_PLAYING:
-      return <GameView />;
-    case PHASE_RESOLVED:
-      return <ResultView />;
-    case PHASE_FINISHED:
-      return <ResultView />;
-  }
+  return (
+    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {(() => {
+          switch (phase) {
+            case PHASE_IDLE:
+            case PHASE_WAITING:
+              return <LobbyView />;
+            case PHASE_PLAYING:
+              return <GameView />;
+            case PHASE_RESOLVED:
+            case PHASE_FINISHED:
+              return <ResultView />;
+          }
+        })()}
+      </div>
+    </div>
+  );
 };

@@ -20,10 +20,14 @@ export const GameView = () => {
   };
 
   return (
-    <div>
-      {opponentDisconnected && <p>Opponent disconnected — waiting for reconnect...</p>}
+    <div className="space-y-8">
+      {opponentDisconnected && (
+        <div className="bg-yellow-900/30 border border-yellow-700 text-yellow-300 text-sm text-center rounded-lg px-4 py-2 animate-pulse">
+          Opponent disconnected — waiting for reconnect...
+        </div>
+      )}
 
-      <div>
+      <div className="flex justify-between items-start">
         <PlayerStatus
           name={players?.[playerIndex]?.name ?? ''}
           score={scores[playerIndex]}
@@ -41,7 +45,11 @@ export const GameView = () => {
 
       <MoveSelector onSelect={handleMove} disabled={!!selectedMove} />
 
-      {selectedMove && <p>You chose {selectedMove} — waiting for opponent...</p>}
+      {selectedMove && (
+        <p className="text-center text-gray-400 text-sm animate-pulse">
+          You chose {selectedMove} — waiting for opponent...
+        </p>
+      )}
     </div>
   );
 };
