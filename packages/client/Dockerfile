@@ -36,6 +36,8 @@ RUN npm ci --workspace=packages/shared --workspace=packages/client
 COPY packages/shared/ packages/shared/
 COPY packages/client/ packages/client/
 
+# Build shared first — tsc needs packages/shared/dist/index.d.ts for type checking
+RUN npm run build --workspace=packages/shared
 RUN npm run build --workspace=packages/client
 
 # ── Stage 3: production ───────────────────────────────────────────────────────
