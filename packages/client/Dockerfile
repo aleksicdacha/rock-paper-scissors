@@ -27,6 +27,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json* ./
 COPY packages/shared/package.json packages/shared/
+COPY packages/server/package.json packages/server/
 COPY packages/client/package.json packages/client/
 
 RUN npm ci --workspace=packages/shared --workspace=packages/client

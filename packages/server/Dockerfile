@@ -24,6 +24,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY packages/shared/package.json packages/shared/
 COPY packages/server/package.json packages/server/
+COPY packages/client/package.json packages/client/
 
 RUN npm ci --workspace=packages/shared --workspace=packages/server
 
@@ -43,6 +44,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY packages/shared/package.json packages/shared/
 COPY packages/server/package.json packages/server/
+COPY packages/client/package.json packages/client/
 
 # Production deps only — workspace symlink node_modules/@rps/shared → packages/shared
 RUN npm ci --workspace=packages/shared --workspace=packages/server --omit=dev
