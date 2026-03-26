@@ -10,7 +10,7 @@ A **server-authoritative real-time Rock Paper Scissors** web app for two players
 - 30-second reconnect window on disconnect (forfeit on timeout)
 - Emoji animations on win/loss
 - Structured JSON logging (pino) for all match lifecycle events
-- 90+ server unit tests (Vitest) + 11 E2E tests (Playwright)
+- 90+ server unit tests (Vitest) + 3 E2E test paths (Playwright)
 - Selective CI pipeline (GitHub Actions) — skips unchanged packages
 - Full Docker Compose setup (Redis + server + client)
 
@@ -292,14 +292,18 @@ npm run test --workspace=packages/server
 
 All tests use fake timers (`vi.useFakeTimers()`), in-memory store mocks (`Map` + `structuredClone`), and mock callbacks. Zero I/O dependencies. ~200ms total.
 
-### E2E Tests (11 Playwright tests)
+### E2E Tests (3 Playwright test paths)
 
 ```bash
 # Requires server + client running (Playwright webServer handles this)
 npm run test:e2e --workspace=packages/client
 ```
 
-Tests: lobby create/join flows, full 2-player game, rematch, leave.
+| Path | Tests | Coverage |
+|---|---|---|
+| Lobby — Create Match | 4 | Renders lobby, disabled without name, enables with name, transitions to waiting |
+| Lobby — Join Match | 4 | Disabled without inputs, disabled name-only, disabled ID-only, enables with both |
+| Full game — two players | 3 | Create→join→play→result, rematch starts new round, leaving returns to lobby |
 
 ### Makefile Shortcuts
 
