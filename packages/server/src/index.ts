@@ -7,6 +7,7 @@ import { config } from './config';
 import { RedisMatchStore } from './store/RedisMatchStore/RedisMatchStore';
 import { GameService } from './services/GameService/GameService';
 import { MatchService } from './services/MatchService/MatchService';
+import { BotService } from './services/BotService/BotService';
 import { SocketGateway } from './gateway/SocketGateway/SocketGateway';
 import { logger } from './logger';
 
@@ -26,7 +27,8 @@ const gameService = new GameService(store, {
   onForfeit: (matchId) => callbackHolder.gateway?.onForfeit(matchId),
 });
 const matchService = new MatchService(store, gameService);
-const gateway = new SocketGateway(io, matchService, gameService);
+const botService = new BotService(matchService, gameService);
+const gateway = new SocketGateway(io, matchService, gameService, botService);
 callbackHolder.gateway = gateway;
 
 gateway.registerHandlers();

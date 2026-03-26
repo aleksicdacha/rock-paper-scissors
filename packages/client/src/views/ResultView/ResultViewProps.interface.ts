@@ -8,6 +8,8 @@ export interface ResultViewProps {
   theirMove: string;
   playerScore: number;
   opponentScore: number;
+  rematchRequested: boolean;
+  opponentName: string;
   onRematch: () => void;
   onLeave: () => void;
 }

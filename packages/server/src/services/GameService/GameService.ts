@@ -1,5 +1,4 @@
 import { Move, ENDED, PLAYING, RESOLVED } from '@rps/shared';
-import { config } from '../../config';
 import { resolveRound } from '../../game/gameLogic';
 import { Match } from '../../models/Match.interface';
 import { MatchCallbacks } from '../../gateway/SocketGateway/MatchCallbacks.interface';
@@ -20,10 +19,10 @@ export class GameService {
     match.moves = [null, null];
     match.rematchRequested = [false, false];
     match.winner = null;
-    match.timeoutAt = Date.now() + config.timer.moveTimeoutMs;
+    match.timeoutAt = Date.now() + match.moveTimeoutMs;
 
     await this.store.set(matchId, match);
-    this.startMoveTimer(matchId);
+    this.startMoveTimer(match);
     return match;
   }
 
@@ -83,10 +82,10 @@ export class GameService {
     this.moveTimers.delete(matchId);
   }
 
-  private startMoveTimer(matchId: string): void {
-    this.clearMoveTimer(matchId);
-    const timer = setTimeout(() => this.onMoveTimeout(matchId), config.timer.moveTimeoutMs);
-    this.moveTimers.set(matchId, timer);
+  private startMoveTimer(match: Match): void {
+    this.clearMoveTimer(match.id);
+    const timer = setTimeout(() => this.onMoveTimeout(match.id), match.moveTimeoutMs);
+    this.moveTimers.set(match.id, timer);
   }
 
   private async onMoveTimeout(matchId: string): Promise<void> {
@@ -110,7 +109,20 @@ function resolveCurrentRound(match: Match): void {
   const round = resolveRound(match.moves[0], match.moves[1]);
   match.rounds.push(round);
   if (round.winner !== null) match.scores[round.winner] += 1;
-  match.state = RESOLVED;
+
+  const [s0, s1] = match.scores;
+  const majority = Math.ceil(match.bestOf / 2);
+
+  const hasWinner = s0 >= majority || s1 >= majority;
+
+  if (hasWinner) {
+    const winnerIdx = s0 > s1 ? 0 : 1;
+    match.state = ENDED;
+    match.winner = match.players[winnerIdx]!.id;
+  } else {
+    match.state = RESOLVED;
+  }
+
   match.moves = [null, null];
   match.timeoutAt = null;
 }

@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 import { Server, Socket } from 'socket.io';
-import { ClientEvent, ServerEvent, Move, ErrorPayload, ENDED } from '@rps/shared';
+import { ClientEvent, ServerEvent, Move, MatchMode, ErrorPayload, ENDED, PVP } from '@rps/shared';
 import { GameService } from '../../services/GameService/GameService.interface';
+import { BotService } from '../../services/BotService/BotService.interface';
 import { MatchCallbacks } from './MatchCallbacks.interface';
 import { MatchService } from '../../services/MatchService/MatchService.interface';
 import { buildGameState, buildMatchResult } from '../../game/matchMappers';
@@ -15,6 +16,7 @@ export class SocketGateway implements MatchCallbacks {
     private readonly io: Server,
     private readonly matchService: MatchService,
     private readonly gameService: GameService,
+    private readonly botService: BotService,
   ) {}
 
   registerHandlers(): void {
@@ -22,8 +24,8 @@ export class SocketGateway implements MatchCallbacks {
       const playerId = (socket.handshake.auth.playerId as string) ?? crypto.randomUUID();
       this.socketsByPlayerId.set(playerId, socket.id);
 
-      socket.on(ClientEvent.MatchCreate, (data: { playerName: string }) =>
-        this.handleCreate(socket, playerId, data.playerName),
+      socket.on(ClientEvent.MatchCreate, (data: { playerName: string; mode?: MatchMode; bestOf?: number; moveTimeoutMs?: number }) =>
+        this.handleCreate(socket, playerId, data.playerName, data.mode, data.bestOf, data.moveTimeoutMs),
       );
 
       socket.on(ClientEvent.MatchJoin, (data: { matchId: string; playerName: string }) =>
@@ -64,12 +66,17 @@ export class SocketGateway implements MatchCallbacks {
     logger.info({ matchId, winner: match.winner, reason: 'disconnect_timeout' }, 'match.forfeited');
   }
 
-  private async handleCreate(socket: Socket, playerId: string, playerName: string): Promise<void> {
+  private async handleCreate(socket: Socket, playerId: string, playerName: string, mode: MatchMode = PVP, bestOf = 3, moveTimeoutMs = 5000): Promise<void> {
     try {
-      const match = await this.matchService.create({ id: playerId, name: playerName, socketId: socket.id });
+      const match = await this.matchService.create({ id: playerId, name: playerName, socketId: socket.id }, mode, bestOf, moveTimeoutMs);
       socket.join(match.id);
       socket.emit(ServerEvent.MatchCreated, { matchId: match.id });
-      logger.info({ matchId: match.id, playerName }, 'match.created');
+      logger.info({ matchId: match.id, playerName, mode }, 'match.created');
+
+      const started = await this.botService.afterMatchCreated(match);
+      if (started) {
+        socket.emit(ServerEvent.GameState, buildGameState(started));
+      }
     } catch (err) {
       this.emitError(socket, 'CREATE_FAILED', err);
     }
@@ -123,7 +130,10 @@ export class SocketGateway implements MatchCallbacks {
 
   private async handleRematch(socket: Socket, playerId: string, matchId: string): Promise<void> {
     try {
-      const { match, ready } = await this.gameService.requestRematch(matchId, playerId);
+      const result = await this.gameService.requestRematch(matchId, playerId);
+      const botResult = await this.botService.afterRematchRequested(matchId);
+      const { match, ready } = botResult ?? result;
+
       if (ready) {
         this.io.to(matchId).emit(ServerEvent.GameRematchReady, { matchId });
         this.io.to(matchId).emit(ServerEvent.GameState, buildGameState(match));
@@ -135,9 +145,15 @@ export class SocketGateway implements MatchCallbacks {
 
   private async handleLeave(socket: Socket, playerId: string, matchId: string): Promise<void> {
     try {
+      const before = await this.matchService.get(matchId);
+      if (!before) {
+        socket.leave(matchId);
+        return;
+      }
+      const wasEnded = before.state === ENDED;
       const match = await this.matchService.leave(matchId, playerId);
       socket.leave(matchId);
-      if (match.state === ENDED && match.winner) {
+      if (!wasEnded && match.state === ENDED && match.winner) {
         socket.to(matchId).emit(ServerEvent.MatchForfeit, { winner: match.winner });
         logger.info({ matchId, winner: match.winner, reason: 'leave' }, 'match.forfeited');
       }

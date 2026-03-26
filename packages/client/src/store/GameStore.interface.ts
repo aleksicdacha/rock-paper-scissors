@@ -13,11 +13,13 @@ export interface GameStoreState {
   players: [{ id: string; name: string }, { id: string; name: string }] | null;
   matchState: MatchState | null;
   round: number;
+  bestOf: number;
   scores: [number, number];
   timeoutAt: number | null;
   moved: [boolean, boolean];
   lastResult: MatchResult | null;
   selectedMove: Move | null;
+  rematchRequested: boolean;
   opponentDisconnected: boolean;
   forfeitWinner: string | null;
   error: ErrorPayload | null;

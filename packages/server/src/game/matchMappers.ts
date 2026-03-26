@@ -9,7 +9,8 @@ export function buildGameState(match: Match): GameState {
       { id: match.players[1]!.id, name: match.players[1]!.name },
     ],
     state: match.state,
-    round: match.rounds.length + 1,
+    round: match.scores[0] + match.scores[1] + 1,
+    bestOf: match.bestOf,
     scores: match.scores,
     timeoutAt: match.timeoutAt,
     moved: [match.moves[0] !== null, match.moves[1] !== null],
@@ -18,8 +19,10 @@ export function buildGameState(match: Match): GameState {
 
 export function buildMatchResult(match: Match): MatchResult {
   const lastRound = match.rounds[match.rounds.length - 1];
-  const winnerId =
-    lastRound.winner !== null
+  const finished = match.state === ENDED;
+  const winnerId = finished
+    ? match.winner
+    : lastRound.winner !== null
       ? match.players[lastRound.winner]!.id
       : null;
   return {
@@ -27,6 +30,6 @@ export function buildMatchResult(match: Match): MatchResult {
     round: lastRound,
     scores: match.scores,
     winner: winnerId,
-    finished: match.state === ENDED,
+    finished,
   };
 }

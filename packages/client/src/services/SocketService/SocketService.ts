@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { ClientEvent, ServerEvent, Move } from '@rps/shared';
+import { ClientEvent, MatchMode, ServerEvent, Move } from '@rps/shared';
 import { PLAYER_ID_KEY, SERVER_URL } from './SocketService.consts';
 
 function getOrCreatePlayerId(): string {
@@ -37,8 +37,8 @@ class SocketService {
     return this.socket;
   }
 
-  createMatch(playerName: string): void {
-    this.socket?.emit(ClientEvent.MatchCreate, { playerName });
+  createMatch(playerName: string, mode?: MatchMode, bestOf?: number, moveTimeoutMs?: number): void {
+    this.socket?.emit(ClientEvent.MatchCreate, { playerName, mode, bestOf, moveTimeoutMs });
   }
 
   joinMatch(matchId: string, playerName: string): void {

@@ -23,8 +23,8 @@ test.describe('Lobby — Create Match', () => {
 
   test('renders the lobby with title and both sections', async ({ page }) => {
     await expect(page.getByText('Rock Paper Scissors')).toBeVisible();
-    await expect(page.getByText('Create Match')).toBeVisible();
-    await expect(page.getByText('Join Match')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
+    await expect(page.getByText(/or join a match/i)).toBeVisible();
   });
 
   test('create button is disabled without a name', async ({ page }) => {
@@ -137,9 +137,9 @@ test.describe('Full game — two players', () => {
     await expect(player1.getByText('You win this round!')).toBeVisible();
     await expect(player2.getByText('You lose this round.')).toBeVisible();
 
-    // Both should see rematch and leave buttons
+    // Both should see next round and leave buttons
     for (const page of [player1, player2]) {
-      await expect(page.getByRole('button', { name: 'Rematch' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Next Round' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Leave' })).toBeVisible();
     }
 
@@ -173,9 +173,9 @@ test.describe('Full game — two players', () => {
     // Wait for result
     await expect(player1.getByText(/You win this round!/)).toBeVisible({ timeout: 5000 });
 
-    // Both request rematch
-    await player1.getByRole('button', { name: 'Rematch' }).click();
-    await player2.getByRole('button', { name: 'Rematch' }).click();
+    // Both request next round
+    await player1.getByRole('button', { name: 'Next Round' }).click();
+    await player2.getByRole('button', { name: 'Next Round' }).click();
 
     // Both should see game view again with move buttons
     for (const page of [player1, player2]) {
@@ -217,7 +217,7 @@ test.describe('Full game — two players', () => {
 
     // Player 1 should be back in lobby
     await expect(player1.getByText('Rock Paper Scissors')).toBeVisible({ timeout: 5000 });
-    await expect(player1.getByText('Create Match')).toBeVisible();
+    await expect(player1.getByRole('button', { name: 'Create' })).toBeVisible();
 
     // Player 2 should see forfeit result
     await expect(player2.getByText(/You won the match!/)).toBeVisible({ timeout: 5000 });

@@ -1,7 +1,10 @@
-import { MatchState, Move, Player, RoundResult } from '@rps/shared';
+import { MatchMode, MatchState, Move, Player, RoundResult } from '@rps/shared';
 
 export interface Match {
   id: string;
+  mode: MatchMode;
+  bestOf: number;
+  moveTimeoutMs: number;
   players: [Player, Player | null];
   state: MatchState;
   rounds: RoundResult[];

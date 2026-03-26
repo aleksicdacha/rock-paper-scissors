@@ -5,7 +5,7 @@ import { ResultViewProps } from '../views/ResultView/ResultViewProps.interface';
 import { SocketService } from '../services/SocketService/SocketService.interface';
 
 export function useResult(socket: SocketService): ResultViewProps {
-  const { phase, matchId, players, scores, lastResult, forfeitWinner, reset } =
+  const { phase, matchId, players, scores, lastResult, forfeitWinner, rematchRequested, reset } =
     useGameStore();
 
   const playerId = socket.playerId;
@@ -32,7 +32,10 @@ export function useResult(socket: SocketService): ResultViewProps {
       : gameConfig.result.roundLose;
 
   const onRematch = () => {
-    if (matchId) socket.requestRematch(matchId);
+    if (matchId) {
+      socket.requestRematch(matchId);
+      useGameStore.setState({ rematchRequested: true });
+    }
   };
 
   const onLeave = () => {
@@ -50,6 +53,8 @@ export function useResult(socket: SocketService): ResultViewProps {
     theirMove,
     playerScore: scores[playerIndex],
     opponentScore: scores[opponentIndex],
+    rematchRequested,
+    opponentName: players?.[opponentIndex]?.name ?? '',
     onRematch,
     onLeave,
   };

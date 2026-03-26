@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { WAITING, PLAYING, ENDED } from '@rps/shared';
+import { WAITING, PLAYING, ENDED, PVP } from '@rps/shared';
 import type { Match } from '../src/models/Match.interface';
 import type { MatchStore } from '../src/store/MatchStore.interface';
 
@@ -16,6 +16,7 @@ const p2 = { id: 'p2', name: 'Bob', socketId: 's2' };
 function createTestMatch(overrides: Partial<Match> = {}): Match {
   return {
     id: 'match-1',
+    mode: PVP,
     players: [p1, p2],
     state: PLAYING,
     rounds: [],
