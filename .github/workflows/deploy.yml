@@ -1,0 +1,195 @@
+name: CI & Deploy to Production
+
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Detect which packages changed
+  # ---------------------------------------------------------------------------
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      client: ${{ steps.filter.outputs.client }}
+      server: ${{ steps.filter.outputs.server }}
+      shared: ${{ steps.filter.outputs.shared }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            client:
+              - 'packages/client/**'
+              - 'packages/shared/**'
+            server:
+              - 'packages/server/**'
+              - 'packages/shared/**'
+            shared:
+              - 'packages/shared/**'
+
+  # ---------------------------------------------------------------------------
+  # Lint — always runs
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+
+  # ---------------------------------------------------------------------------
+  # Server Build
+  # ---------------------------------------------------------------------------
+  server-build:
+    name: Server Build
+    needs: changes
+    if: needs.changes.outputs.server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/server
+
+  # ---------------------------------------------------------------------------
+  # Client Build
+  # ---------------------------------------------------------------------------
+  client-build:
+    name: Client Build
+    needs: changes
+    if: needs.changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/client
+
+  # ---------------------------------------------------------------------------
+  # Server Unit Tests
+  # ---------------------------------------------------------------------------
+  server-tests:
+    name: Server Unit Tests
+    needs: changes
+    if: needs.changes.outputs.server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --workspace=packages/shared
+      - run: npm run test --workspace=packages/server
+
+  # ---------------------------------------------------------------------------
+  # Client E2E Tests
+  # ---------------------------------------------------------------------------
+  client-e2e:
+    name: Client E2E Tests
+    needs: [changes, client-build]
+    if: needs.changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build --workspace=packages/shared
+      - run: npm run build --workspace=packages/server
+      - run: npm run build --workspace=packages/client
+        env:
+          VITE_SERVER_URL: http://localhost:3001
+      - run: npm run test:e2e --workspace=packages/client
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: packages/client/playwright-report/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Deploy — only runs after all CI jobs pass
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy to Hetzner
+    runs-on: ubuntu-latest
+    needs: [lint, server-build, client-build, server-tests, client-e2e]
+    if: always() && !failure() && !cancelled()
+
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.RPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.RPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
+            -o StrictHostKeyChecking=no \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
+            ${{ secrets.RPS_USER }}@${{ secrets.RPS_HOST }} << 'EOF'
+          set -e
+
+          cd /root/paper-rock-scissors
+
+          echo "==> Pulling latest code from develop..."
+          git fetch origin develop
+          git reset --hard origin/develop
+
+          echo "==> Building server..."
+          docker compose -f docker-compose.prod.yml build server
+
+          echo "==> Building client..."
+          docker compose -f docker-compose.prod.yml build client
+
+          echo "==> Starting containers..."
+          docker compose -f docker-compose.prod.yml up -d
+
+          echo "==> Cleaning up unused images..."
+          docker image prune -f
+
+          echo "==> Done. Containers status:"
+          docker compose -f docker-compose.prod.yml ps
+          EOF
