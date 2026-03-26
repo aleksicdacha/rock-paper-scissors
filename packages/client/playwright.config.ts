@@ -22,6 +22,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       cwd: '../..',
       env: {
+        ...process.env,
         PORT: '3001',
         REDIS_URL: process.env.REDIS_URL ?? 'redis://localhost:6380',
         MATCH_PREFIX: 'match:',
