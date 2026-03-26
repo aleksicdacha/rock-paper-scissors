@@ -23,7 +23,7 @@ export default defineConfig({
       cwd: '../..',
       env: {
         PORT: '3001',
-        REDIS_URL: process.env.REDIS_URL ?? 'redis://localhost:6379',
+        REDIS_URL: process.env.REDIS_URL ?? 'redis://localhost:6380',
         MATCH_PREFIX: 'match:',
         MATCH_TTL_SECONDS: '3600',
         MOVE_TIMEOUT_MS: '10000',

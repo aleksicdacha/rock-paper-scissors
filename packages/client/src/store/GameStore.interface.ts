@@ -19,6 +19,7 @@ export interface GameStoreState {
   moved: [boolean, boolean];
   lastResult: MatchResult | null;
   selectedMove: Move | null;
+  rematchRequested: boolean;
   opponentDisconnected: boolean;
   forfeitWinner: string | null;
   error: ErrorPayload | null;

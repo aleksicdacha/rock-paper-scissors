@@ -145,9 +145,15 @@ export class SocketGateway implements MatchCallbacks {
 
   private async handleLeave(socket: Socket, playerId: string, matchId: string): Promise<void> {
     try {
+      const before = await this.matchService.get(matchId);
+      if (!before) {
+        socket.leave(matchId);
+        return;
+      }
+      const wasEnded = before.state === ENDED;
       const match = await this.matchService.leave(matchId, playerId);
       socket.leave(matchId);
-      if (match.state === ENDED && match.winner) {
+      if (!wasEnded && match.state === ENDED && match.winner) {
         socket.to(matchId).emit(ServerEvent.MatchForfeit, { winner: match.winner });
         logger.info({ matchId, winner: match.winner, reason: 'leave' }, 'match.forfeited');
       }

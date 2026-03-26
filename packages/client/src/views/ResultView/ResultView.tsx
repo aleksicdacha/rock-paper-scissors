@@ -62,6 +62,8 @@ export const ResultView = ({
   theirMove,
   playerScore,
   opponentScore,
+  rematchRequested,
+  opponentName,
   onRematch,
   onLeave,
 }: ResultViewProps) => {
@@ -125,12 +127,18 @@ export const ResultView = ({
       </div>
 
       <div className="flex justify-center gap-4">
-        <button
-          onClick={onRematch}
-          className="bg-indigo-600 hover:bg-indigo-500 px-8 py-3 rounded-xl font-semibold transition-all hover:scale-105"
-        >
-          {gameConfig.result.rematchButton}
-        </button>
+        <div className="flex flex-col items-center gap-2">
+          <button
+            onClick={onRematch}
+            disabled={rematchRequested}
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-8 py-3 rounded-xl font-semibold transition-all hover:scale-105"
+          >
+            {gameConfig.result.rematchButton}
+          </button>
+          {rematchRequested && (
+            <p className="text-gray-400 text-sm animate-pulse">Waiting for {opponentName}...</p>
+          )}
+        </div>
         <button
           onClick={onLeave}
           className="bg-gray-700 hover:bg-gray-600 px-8 py-3 rounded-xl font-semibold transition-all hover:scale-105"

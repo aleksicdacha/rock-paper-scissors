@@ -20,6 +20,7 @@ export const INITIAL_GAME_STATE: GameStoreState = {
   moved: [false, false],
   lastResult: null,
   selectedMove: null,
+  rematchRequested: false,
   opponentDisconnected: false,
   forfeitWinner: null,
   error: null,

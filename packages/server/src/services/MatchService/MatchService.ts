@@ -43,7 +43,7 @@ export class MatchService {
     const match = await this.getOrThrow(matchId);
     this.clearDisconnectTimer(matchId);
 
-    if (match.state === WAITING) {
+    if (match.state === WAITING || match.state === ENDED) {
       await this.store.delete(matchId);
       match.state = ENDED;
       return match;

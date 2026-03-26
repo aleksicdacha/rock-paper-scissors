@@ -2,7 +2,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - '6379:6379'
+      - '6380:6379'
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
@@ -39,7 +39,7 @@ services:
       - '5173:5173'
     environment:
       - NODE_ENV=development
-      - VITE_SERVER_URL=http://server:3001
+      - VITE_SERVER_URL=http://localhost:3001
       - VITE_PORT=5173
     depends_on:
       - server

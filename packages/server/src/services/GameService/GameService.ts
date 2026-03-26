@@ -110,11 +110,10 @@ function resolveCurrentRound(match: Match): void {
   match.rounds.push(round);
   if (round.winner !== null) match.scores[round.winner] += 1;
 
-  const roundsPlayed = match.rounds.length;
   const [s0, s1] = match.scores;
+  const majority = Math.ceil(match.bestOf / 2);
 
-  const hasWinner =
-    roundsPlayed >= match.bestOf && s0 !== s1;
+  const hasWinner = s0 >= majority || s1 >= majority;
 
   if (hasWinner) {
     const winnerIdx = s0 > s1 ? 0 : 1;

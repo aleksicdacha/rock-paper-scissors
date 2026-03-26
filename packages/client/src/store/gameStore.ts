@@ -38,7 +38,7 @@ export const useGameStore = create<GameStore>()((set) => ({
     }),
 
   onRematchReady: () =>
-    set({ lastResult: null, selectedMove: null }),
+    set({ lastResult: null, selectedMove: null, rematchRequested: false }),
 
   onPlayerDisconnected: () =>
     set({ opponentDisconnected: true }),
