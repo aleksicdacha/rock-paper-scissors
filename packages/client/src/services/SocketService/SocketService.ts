@@ -2,10 +2,21 @@ import { io, Socket } from 'socket.io-client';
 import { ClientEvent, MatchMode, ServerEvent, Move } from '@rps/shared';
 import { PLAYER_ID_KEY, SERVER_URL } from './SocketService.consts';
 
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback for non-secure contexts (HTTP)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 function getOrCreatePlayerId(): string {
   const existing = localStorage.getItem(PLAYER_ID_KEY);
   if (existing) return existing;
-  const id = crypto.randomUUID();
+  const id = generateId();
   localStorage.setItem(PLAYER_ID_KEY, id);
   return id;
 }
