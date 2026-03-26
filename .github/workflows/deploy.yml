@@ -156,40 +156,33 @@ jobs:
     if: always() && !failure() && !cancelled()
 
     steps:
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.RPS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "${{ secrets.RPS_HOST }}" >> ~/.ssh/known_hosts
-
       - name: Deploy via SSH
-        run: |
-          ssh -i ~/.ssh/id_ed25519 \
-            -o StrictHostKeyChecking=no \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=20 \
-            ${{ secrets.RPS_USER }}@${{ secrets.RPS_HOST }} << 'EOF'
-          set -e
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.RPS_HOST }}
+          username: ${{ secrets.RPS_USER }}
+          key: ${{ secrets.RPS_SSH_PRIVATE_KEY }}
+          command_timeout: 30m
+          script: |
+            set -e
 
-          cd /root/paper-rock-scissors
+            cd /root/paper-rock-scissors
 
-          echo "==> Pulling latest code from develop..."
-          git fetch origin develop
-          git reset --hard origin/develop
+            echo "==> Pulling latest code from develop..."
+            git fetch origin develop
+            git reset --hard origin/develop
 
-          echo "==> Building server..."
-          docker compose -f docker-compose.prod.yml build server
+            echo "==> Building server..."
+            docker compose -f docker-compose.prod.yml build server
 
-          echo "==> Building client..."
-          docker compose -f docker-compose.prod.yml build client
+            echo "==> Building client..."
+            docker compose -f docker-compose.prod.yml build client
 
-          echo "==> Starting containers..."
-          docker compose -f docker-compose.prod.yml up -d
+            echo "==> Starting containers..."
+            docker compose -f docker-compose.prod.yml up -d
 
-          echo "==> Cleaning up unused images..."
-          docker image prune -f
+            echo "==> Cleaning up unused images..."
+            docker image prune -f
 
-          echo "==> Done. Containers status:"
-          docker compose -f docker-compose.prod.yml ps
-          EOF
+            echo "==> Done. Containers status:"
+            docker compose -f docker-compose.prod.yml ps
