@@ -21,6 +21,7 @@ export const useGameStore = create<GameStore>()((set) => ({
       players: data.players,
       matchState: data.state,
       round: data.round,
+      bestOf: data.bestOf,
       scores: data.scores,
       timeoutAt: data.timeoutAt,
       moved: data.moved,

@@ -20,6 +20,7 @@ export interface GameState {
   players: [Pick<Player, 'id' | 'name'>, Pick<Player, 'id' | 'name'>];
   state: MatchState;
   round: number;
+  bestOf: number;
   scores: [number, number];
   timeoutAt: number | null;
   moved: [boolean, boolean];

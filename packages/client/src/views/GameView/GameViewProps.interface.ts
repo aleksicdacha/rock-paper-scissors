@@ -7,6 +7,8 @@ export interface GameViewProps {
   opponentName: string;
   opponentScore: number;
   opponentMoved: boolean;
+  round: number;
+  bestOf: number;
   timeoutAt: number | null;
   selectedMove: Move | null;
   opponentDisconnected: boolean;

@@ -24,8 +24,8 @@ export class SocketGateway implements MatchCallbacks {
       const playerId = (socket.handshake.auth.playerId as string) ?? crypto.randomUUID();
       this.socketsByPlayerId.set(playerId, socket.id);
 
-      socket.on(ClientEvent.MatchCreate, (data: { playerName: string; mode?: MatchMode }) =>
-        this.handleCreate(socket, playerId, data.playerName, data.mode),
+      socket.on(ClientEvent.MatchCreate, (data: { playerName: string; mode?: MatchMode; bestOf?: number; moveTimeoutMs?: number }) =>
+        this.handleCreate(socket, playerId, data.playerName, data.mode, data.bestOf, data.moveTimeoutMs),
       );
 
       socket.on(ClientEvent.MatchJoin, (data: { matchId: string; playerName: string }) =>
@@ -66,9 +66,9 @@ export class SocketGateway implements MatchCallbacks {
     logger.info({ matchId, winner: match.winner, reason: 'disconnect_timeout' }, 'match.forfeited');
   }
 
-  private async handleCreate(socket: Socket, playerId: string, playerName: string, mode: MatchMode = PVP): Promise<void> {
+  private async handleCreate(socket: Socket, playerId: string, playerName: string, mode: MatchMode = PVP, bestOf = 3, moveTimeoutMs = 5000): Promise<void> {
     try {
-      const match = await this.matchService.create({ id: playerId, name: playerName, socketId: socket.id }, mode);
+      const match = await this.matchService.create({ id: playerId, name: playerName, socketId: socket.id }, mode, bestOf, moveTimeoutMs);
       socket.join(match.id);
       socket.emit(ServerEvent.MatchCreated, { matchId: match.id });
       logger.info({ matchId: match.id, playerName, mode }, 'match.created');

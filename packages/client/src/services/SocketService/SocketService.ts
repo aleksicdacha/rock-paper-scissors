@@ -37,8 +37,8 @@ class SocketService {
     return this.socket;
   }
 
-  createMatch(playerName: string, mode?: MatchMode): void {
-    this.socket?.emit(ClientEvent.MatchCreate, { playerName, mode });
+  createMatch(playerName: string, mode?: MatchMode, bestOf?: number, moveTimeoutMs?: number): void {
+    this.socket?.emit(ClientEvent.MatchCreate, { playerName, mode, bestOf, moveTimeoutMs });
   }
 
   joinMatch(matchId: string, playerName: string): void {

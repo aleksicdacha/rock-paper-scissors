@@ -10,6 +10,7 @@ export function buildGameState(match: Match): GameState {
     ],
     state: match.state,
     round: match.rounds.length + 1,
+    bestOf: match.bestOf,
     scores: match.scores,
     timeoutAt: match.timeoutAt,
     moved: [match.moves[0] !== null, match.moves[1] !== null],

@@ -22,9 +22,9 @@ export class MatchService {
     return this.store.all();
   }
 
-  async create(player: Player, mode: MatchMode = PVP): Promise<Match> {
+  async create(player: Player, mode: MatchMode = PVP, bestOf = 3, moveTimeoutMs = 5000): Promise<Match> {
     const matchId = crypto.randomUUID();
-    const match = createMatch(matchId, player, mode);
+    const match = createMatch(matchId, player, mode, bestOf, moveTimeoutMs);
     await this.store.set(matchId, match);
     return match;
   }

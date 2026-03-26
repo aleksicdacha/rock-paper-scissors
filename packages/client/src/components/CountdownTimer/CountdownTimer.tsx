@@ -27,10 +27,15 @@ export const CountdownTimer = ({ timeoutAt }: CountdownTimerProps) => {
 
   if (!timeoutAt || seconds <= 0) return null;
 
+  const isUrgent = seconds <= 3;
+
   return (
-    <div className="text-center">
-      <span className={`text-4xl font-bold tabular-nums ${seconds <= 3 ? 'text-red-400' : 'text-white'}`}>
-        {seconds}s
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-xs text-gray-500 uppercase tracking-widest font-medium">Time left</span>
+      <span className={`text-5xl font-black tabular-nums transition-colors ${
+        isUrgent ? 'text-red-400 animate-[countdown-pulse_0.5s_ease-in-out_infinite]' : 'text-white'
+      }`}>
+        {seconds}
       </span>
     </div>
   );

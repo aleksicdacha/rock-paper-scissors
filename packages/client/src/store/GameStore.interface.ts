@@ -13,6 +13,7 @@ export interface GameStoreState {
   players: [{ id: string; name: string }, { id: string; name: string }] | null;
   matchState: MatchState | null;
   round: number;
+  bestOf: number;
   scores: [number, number];
   timeoutAt: number | null;
   moved: [boolean, boolean];

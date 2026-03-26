@@ -14,11 +14,15 @@ export const gameConfig = {
     vsComputerButton: 'Play vs Computer',
     waitingHeading: 'Waiting for opponent...',
     waitingSubtext: 'Share this code with your opponent:',
+    bestOfLabel: 'Best of',
+    bestOfOptions: [5, 10, 15] as readonly number[],
   },
 
   game: {
+    moveTimeoutMs: 10000,
     disconnectedBanner: 'Opponent disconnected — waiting for reconnect...',
     waitingForOpponent: (move: string) => `You chose ${move} — waiting for opponent...`,
+    deciderRoundLabel: '⚔️ Tie breaker!',
   },
 
   result: {
@@ -29,7 +33,7 @@ export const gameConfig = {
     matchLose: 'You lost the match.',
     forfeitNote: 'Opponent forfeited.',
     movesFallback: 'timeout',
-    rematchButton: 'Rematch',
+    rematchButton: 'Next Round',
     leaveButton: 'Leave',
     backToLobbyButton: 'Back to Lobby',
   },
@@ -43,5 +47,11 @@ export const gameConfig = {
     rock: 'Rock',
     paper: 'Paper',
     scissors: 'Scissors',
+  } satisfies Record<Move, string>,
+
+  moveEmojis: {
+    rock: '✊',
+    paper: '✋',
+    scissors: '✌️',
   } satisfies Record<Move, string>,
 } as const;

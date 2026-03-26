@@ -16,6 +16,8 @@ function createTestMatch(overrides: Partial<Match> = {}): Match {
   return {
     id: 'match-1',
     mode: PVP,
+    bestOf: 3,
+    moveTimeoutMs: 5000,
     players: [p1, null],
     state: WAITING,
     rounds: [],

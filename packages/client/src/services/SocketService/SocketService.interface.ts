@@ -4,7 +4,7 @@ export interface SocketService {
   readonly playerId: string;
   connect(): unknown;
   disconnect(): void;
-  createMatch(playerName: string, mode?: MatchMode): void;
+  createMatch(playerName: string, mode?: MatchMode, bestOf?: number, moveTimeoutMs?: number): void;
   joinMatch(matchId: string, playerName: string): void;
   sendMove(matchId: string, move: Move): void;
   requestRematch(matchId: string): void;

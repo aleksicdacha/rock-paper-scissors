@@ -1,5 +1,6 @@
 import { Phase } from './GameStore.types';
 import { GameStoreState } from './GameStore.interface';
+import { gameConfig } from '../gameConfig';
 
 export const PHASE_IDLE: Phase = 'idle';
 export const PHASE_WAITING: Phase = 'waiting';
@@ -13,6 +14,7 @@ export const INITIAL_GAME_STATE: GameStoreState = {
   players: null,
   matchState: null,
   round: 0,
+  bestOf: gameConfig.lobby.bestOfOptions[0],
   scores: [0, 0],
   timeoutAt: null,
   moved: [false, false],

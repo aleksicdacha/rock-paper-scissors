@@ -4,7 +4,7 @@ import { GameViewProps } from '../views/GameView/GameViewProps.interface';
 import { SocketService } from '../services/SocketService/SocketService.interface';
 
 export function useGame(socket: SocketService): GameViewProps {
-  const { matchId, players, scores, timeoutAt, moved, selectedMove, opponentDisconnected } =
+  const { matchId, players, scores, timeoutAt, moved, selectedMove, opponentDisconnected, round, bestOf } =
     useGameStore();
 
   const playerId = socket.playerId;
@@ -24,6 +24,8 @@ export function useGame(socket: SocketService): GameViewProps {
     opponentName: players?.[opponentIndex]?.name ?? '',
     opponentScore: scores[opponentIndex],
     opponentMoved: moved[opponentIndex],
+    round,
+    bestOf,
     timeoutAt,
     selectedMove,
     opponentDisconnected,

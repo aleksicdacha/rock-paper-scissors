@@ -23,8 +23,8 @@ export const App = () => {
   const resultProps = useResult(socketService);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white flex items-center justify-center p-4">
+      <div className="w-full max-w-lg">
         {(() => {
           switch (phase) {
             case PHASE_IDLE:
