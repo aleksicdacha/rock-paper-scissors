@@ -668,7 +668,7 @@ Clients (browsers)
   │
   ▼
 CDN (CloudFront / Cloudflare)
-  │  Static assets (HTML/JS) served from edge — no origin hits
+  │  Static assets (HTML/JS) served from edge — no origin hits.0
   │
   ▼
 API Gateway (Kong / AWS API GW)

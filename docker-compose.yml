@@ -13,8 +13,10 @@ services:
     build:
       context: .
       dockerfile: packages/server/Dockerfile
+      target: dev
     ports:
       - '3001:3001'
+    command: sh -c "npm run build --workspace=packages/shared && npm run dev --workspace=packages/server"
     environment:
       - NODE_ENV=development
       - PORT=3001
@@ -35,6 +37,7 @@ services:
     build:
       context: .
       dockerfile: packages/client/Dockerfile
+      target: dev
     ports:
       - '5173:5173'
     environment:

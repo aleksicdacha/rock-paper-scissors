@@ -339,3 +339,21 @@ PR conventions (`.github/workflows/pr-conventions.yml`): validates PR title form
 | **`structuredClone` in test mocks** | Simulates Redis serialization behavior (no shared references). Slightly slower than direct Map, but catches a real class of bugs. |
 | **No queue-based matchmaking** | Invite-code matchmaking is simpler, more demonstrable. Queue-based (Redis Sorted Set) is the natural next step. |
 | **Single-region** | Both players must connect to the same server. Multi-region requires match placement logic in a Matchmaking Service. |
+
+---
+
+## What I'd Do Differently With More Time
+
+**HTTPS + domain name.** The app currently runs on a raw IP over HTTP. This breaks `navigator.clipboard` and `crypto.randomUUID` (both require a secure context), forcing fallbacks. A domain + Let's Encrypt cert solves this cleanly and is table stakes for production.
+
+**Queue-based matchmaking.** The invite-code system works for demos but doesn't scale. A Redis Sorted Set (scored by join timestamp) would let any server instance dequeue and pair waiting players. Straightforward addition — the `MatchService.create` / `join` boundary already separates match creation from player pairing.
+
+**Player authentication.** The current `playerId` in `localStorage` is a session correlation key, not identity. Adding JWT auth (even for anonymous players — issue a token on first visit, no registration wall) provides verified identity that survives tab refreshes and eventually cross-device sessions. The `SocketGateway` handshake is the only code that changes.
+
+**Spectator mode.** The architecture already supports it (join the Socket.IO room as read-only, broadcasts reach all room members). The missing pieces are a `spectator:join` event handler, a UI for spectators, and filtering move data from `game:state` broadcasts until resolution.
+
+**Integration tests for SocketGateway.** Unit tests cover services and pure logic thoroughly (106 tests). E2E tests cover the full stack. The gap is the SocketGateway layer — currently only tested indirectly through E2E. A test harness with a real Socket.IO server (in-memory Redis, `socket.io-client` as the test driver) would catch event mapping bugs faster.
+
+**Rate limiting and abuse prevention.** No server-side rate limiting on Socket.IO events. A player could spam `game:move` or `match:create`. Socket.IO middleware that tracks event frequency per `playerId` and disconnects abusers would be the minimal viable protection.
+
+**Accessibility.** The UI lacks ARIA labels, keyboard navigation for move selection, and screen reader support. These are non-trivial to retrofit but important for a public-facing game.
