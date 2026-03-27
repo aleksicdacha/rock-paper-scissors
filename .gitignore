@@ -2,6 +2,10 @@ node_modules
 dist
 .env
 *.log
+*.tsbuildinfo
 .DS_Store
 coverage
-ARCHITECTURE.md
+Agents.md
+APPLICATION_FLOW.md
+INTERVIEW_PREP.md
+DEPLOY_HETZNER_CHECKLIST.md

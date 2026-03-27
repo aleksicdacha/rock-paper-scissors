@@ -11,11 +11,12 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
+    "types": ["vite/client"],
     "paths": {
       "@rps/shared": ["../shared/src"],
       "@rps/shared/*": ["../shared/src/*"]
     }
   },
   "include": ["src"],
-  "references": [{ "path": "../shared" }]
+  "references": [{ "path": "../shared" }, { "path": "./tsconfig.node.json" }]
 }

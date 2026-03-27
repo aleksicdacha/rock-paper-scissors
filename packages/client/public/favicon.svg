@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="#1e293b" stroke="#6366f1" stroke-width="3"/>
+
+  <!-- Rock fist -->
+  <!-- Palm/base -->
+  <rect x="28" y="52" width="44" height="26" rx="8" fill="#fbbf24"/>
+
+  <!-- Index finger -->
+  <rect x="30" y="30" width="12" height="30" rx="6" fill="#fbbf24"/>
+  <!-- Middle finger -->
+  <rect x="44" y="26" width="12" height="32" rx="6" fill="#fbbf24"/>
+  <!-- Ring finger -->
+  <rect x="58" y="30" width="12" height="28" rx="6" fill="#fbbf24"/>
+  <!-- Pinky -->
+  <rect x="66" y="38" width="9" height="22" rx="4.5" fill="#fbbf24"/>
+
+  <!-- Thumb -->
+  <rect x="18" y="54" width="16" height="10" rx="5" fill="#fbbf24"/>
+
+  <!-- Knuckle lines -->
+  <line x1="36" y1="52" x2="36" y2="56" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="50" y1="52" x2="50" y2="56" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="64" y1="52" x2="64" y2="56" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
