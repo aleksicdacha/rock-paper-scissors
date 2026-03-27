@@ -5,7 +5,6 @@ dist
 *.tsbuildinfo
 .DS_Store
 coverage
-ARCHITECTURE.md
 Agents.md
 APPLICATION_FLOW.md
 INTERVIEW_PREP.md
