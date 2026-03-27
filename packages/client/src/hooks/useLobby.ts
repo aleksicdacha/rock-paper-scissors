@@ -22,7 +22,20 @@ export function useLobby(socket: SocketService): LobbyViewProps {
   };
 
   const onCopy = () => {
-    if (matchId) navigator.clipboard.writeText(matchId);
+    if (!matchId) return;
+    if (navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(matchId);
+    } else {
+      // Fallback for HTTP (non-secure context) — clipboard API unavailable
+      const el = document.createElement('textarea');
+      el.value = matchId;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
   };
 
   return {
