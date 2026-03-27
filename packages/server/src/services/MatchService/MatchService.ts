@@ -56,11 +56,10 @@ export class MatchService {
     const match = await this.store.get(matchId);
     if (!match) return null;
 
-    if (match.state === WAITING) {
-      await this.store.delete(matchId);
-      return null;
-    }
+    if (match.state === ENDED) return match;
 
+    // Keep WAITING matches alive so P2 can still join during a brief P1 disconnect.
+    // The timer will clean up the match if P1 never reconnects.
     match.disconnectedPlayer = playerId;
     await this.store.set(matchId, match);
     this.startDisconnectTimer(matchId, playerId);
@@ -90,6 +89,11 @@ export class MatchService {
     this.disconnectTimers.delete(matchId);
     const match = await this.store.get(matchId);
     if (!match || match.state === ENDED) return;
+
+    if (match.state === WAITING) {
+      await this.store.delete(matchId);
+      return;
+    }
 
     await this.gameService.forfeit(matchId, playerId);
   }

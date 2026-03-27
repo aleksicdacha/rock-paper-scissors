@@ -24,6 +24,9 @@ export class SocketGateway implements MatchCallbacks {
       const playerId = (socket.handshake.auth.playerId as string) ?? crypto.randomUUID();
       this.socketsByPlayerId.set(playerId, socket.id);
 
+      // Auto-rejoin match room if this player was disconnected mid-match
+      void this.handleAutoReconnect(socket, playerId);
+
       socket.on(ClientEvent.MatchCreate, (data: { playerName: string; mode?: MatchMode; bestOf?: number; moveTimeoutMs?: number }) =>
         this.handleCreate(socket, playerId, data.playerName, data.mode, data.bestOf, data.moveTimeoutMs),
       );
@@ -160,6 +163,18 @@ export class SocketGateway implements MatchCallbacks {
     } catch (err) {
       this.emitError(socket, 'LEAVE_FAILED', err);
     }
+  }
+
+  private async handleAutoReconnect(socket: Socket, playerId: string): Promise<void> {
+    const all = await this.matchService.getAll();
+    const match = all.find((m) => m.disconnectedPlayer === playerId && m.state !== ENDED);
+    if (!match) return;
+
+    await this.matchService.reconnect(match.id, playerId, socket.id);
+    socket.join(match.id);
+    const playerName = match.players.find((p) => p?.id === playerId)?.name ?? 'Unknown';
+    socket.emit(ServerEvent.GameState, buildGameState(match));
+    socket.to(match.id).emit(ServerEvent.PlayerReconnected, { playerName });
   }
 
   private async handleDisconnect(playerId: string): Promise<void> {

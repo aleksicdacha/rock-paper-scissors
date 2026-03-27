@@ -157,15 +157,16 @@ describe('MatchService', () => {
   });
 
   describe('disconnect', () => {
-    it('deletes match and returns null when in WAITING state', async () => {
+    it('sets disconnectedPlayer and starts timer for WAITING match', async () => {
       const match = createTestMatch({ state: WAITING, players: [p1, null] });
       const store = createMockStore([match]);
       const svc = new MatchService(store, createMockGameService() as never);
 
       const result = await svc.disconnect('match-1', 'p1');
 
-      expect(result).toBeNull();
-      expect(store.delete).toHaveBeenCalledWith('match-1');
+      expect(result).not.toBeNull();
+      expect(result!.disconnectedPlayer).toBe('p1');
+      expect(store.set).toHaveBeenCalledWith('match-1', expect.objectContaining({ disconnectedPlayer: 'p1' }));
     });
 
     it('marks disconnectedPlayer and starts timer for active match', async () => {
@@ -231,6 +232,21 @@ describe('MatchService', () => {
       await vi.advanceTimersByTimeAsync(0);
 
       expect(gameService.forfeit).toHaveBeenCalledWith('match-1', 'p1');
+    });
+
+    it('deletes WAITING match after timeout without forfeiting', async () => {
+      const match = createTestMatch({ state: WAITING, players: [p1, null] });
+      const store = createMockStore([match]);
+      const gameService = createMockGameService();
+      const svc = new MatchService(store, gameService as never);
+
+      await svc.disconnect('match-1', 'p1');
+
+      vi.advanceTimersByTime(30_000);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(gameService.forfeit).not.toHaveBeenCalled();
+      expect(store.delete).toHaveBeenCalledWith('match-1');
     });
 
     it('does not forfeit if match already ended before timeout', async () => {
