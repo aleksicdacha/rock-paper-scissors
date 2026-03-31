@@ -26,9 +26,9 @@ A **server-authoritative real-time Rock Paper Scissors** web app for two players
 ### With Docker (recommended)
 
 ```bash
-git clone git@github.com:aleksicdacha/paper-rock-scissors.git
+git clone https://github.com/aleksicdacha/rock-paper-scissors.git
 cd paper-rock-scissors
-docker-compose up --build
+docker compose up --build
 ```
 
 | Service | URL |
